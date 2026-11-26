@@ -616,3 +616,10 @@ setup_arch. No text = death between setup_arch and console_init
   to memory), r12 AAPCS. r0 (live args) preserved.
   Final color after mint names the failing init. GOLD = console_init
   reached -> t4fb text should follow.
+
+## Update 34 (2026-11-26, new PC): stops at DARK OLIVE (m4 = setup_arch) -> white
+See docs/SESSION-2026-11-26.md. Machine 3564 is valid; setup_arch registers the
+t4fb console (white-on-black text, cannot make a solid white screen); m5..m10
+faulted on the identity map that paging_init wipes (our bug, fixed in
+kcaves.bin: VA bottom strip). __log_buf = PA 0x0028FCE0 (128 KB);
+tools/oiblog.py reads it back via openiboot hexdump after a DFU reset.
