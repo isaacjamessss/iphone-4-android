@@ -1,0 +1,52 @@
+Import("*")
+
+env = env.Clone()
+env.Append(CPPPATH = [Dir('includes')])
+env.Append(CPPDEFINES = ['ARM_A8', 'CONFIG_A4', 'MALLOC_NO_WDT', 'BIG_FONT'])
+
+# The original 2010-era toolchain defaulted to a CPU that supported BLX/WFI;
+# modern arm-none-eabi-gcc defaults to ARMv4T. Target the A4's Cortex-A8
+# explicitly. -fgnu89-inline restores the C89 inline linkage this tree assumes,
+# and -Wno-error keeps 2012 code warnings from blocking a bring-up build.
+env.Append(CPPFLAGS = ['-march=armv7-a', '-mtune=cortex-a8', '-fgnu89-inline', '-fcommon', '-Wno-error'])
+env.Append(LINKFLAGS = ['-march=armv7-a', '-mtune=cortex-a8', '-Wl,-z,max-page-size=0x1000'])
+
+env.AddModules([
+	"acm",
+	"usb-synopsys",
+	"vfl-vfl",
+	"vfl-vsvfl",
+	"ftl-yaftl",
+	])
+
+plat_a4_src = arch_arm_src + base_src + env.Localize([
+	'a4.c',
+	'aes.c',
+	'buttons.c',
+	'chipid.c',
+	'clock.c',
+	'event.c',
+	'gpio.c',
+	'i2c.c',
+	'interrupt.c',
+	'mipi_dsim.c',
+	'clcd.c',
+	'miu.c',
+	'mmu.c',
+	'pmu.c',
+	'power.c',
+	'spi.c',
+	'timer.c',
+	'uart.c',
+	'cdma.c',
+	'usbphy.c',
+	'h2fmi.c',
+	'sdio.c',
+	]) + hfs_src
+Export('plat_a4_src')
+
+env.SConscript('iPhone4G.SConscript', 'env')
+env.SConscript('iPhone4CDMA.SConscript', 'env')
+env.SConscript('iPad1G.SConscript', 'env')
+env.SConscript('aTV2G.SConscript', 'env')
+env.SConscript('iPodTouch4G.SConscript', 'env')

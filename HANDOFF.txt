@@ -1,0 +1,327 @@
+# HANDOFF — openiboot / Linux on iPhone 4 CDMA (iPhone3,3 / n92ap)
+
+> **UPDATE 2026-11-24: STAGE 1 COMPLETE.** openiboot runs on n92ap with a
+> working console (OiBC), display (panel 0xa2c205c8), clocks (PLL0 800 MHz)
+> and NAND detection. The macOS plan below is obsolete — the work was
+> finished on native Linux (AnduinOS). See `docs/BRINGUP-2026-11-24.md`
+> for the complete working recipe and post-mortem, and
+> `docs/PORT-n92ap.md` for the iBSS image3-loader reversal. Key facts:
+> native Linux delivers real USB bus resets (the old blocker is gone), the
+> pod2g payload needs the encrypted IMG3 (not the raw .bin), stock 5.1.1
+> iBSS has no command parser (use manifest-boot), iBSS needs the
+> iBoot32Patcher-style verify_shsh patch (`tools/img3_repack.py`), and
+> openiboot must come from archeYR's fork (the iDroid tree hangs in early
+> init). Console: `tools/oibc`. Everything is RAM-only.
+
+Written 2026-11-22. Everything below was verified on real hardware except where
+marked **UNVERIFIED**. Read the "Honest scope" section before planning.
+
+---
+
+## 1. Mission and honest scope
+
+Goal: port openiboot (then Linux, then possibly Android) to an iPhone 4 CDMA,
+board **n92ap**, A4 / S5L8930, currently on untethered iOS 5.
+
+What is realistic:
+
+- **openiboot console: reachable.** Port is written and compiled; only a host
+  USB limitation stands between us and the first boot (see §3).
+- **Linux console: months of work** after that (n92ap device tree, drivers).
+- **Android: not reachable.** Android has never been completed on *any* A4
+  device. iDroid's A4 work stopped in 2012 before Android 4.0. Even Linux on
+  n90ap (postmarketOS `apple-n90`) currently has **USB networking only** — no
+  display, touch, storage or battery. Do not promise Android to the user.
+
+The user knows this; they explicitly chose "Stage 0+1" (env + openiboot).
+
+---
+
+## 2. State of work
+
+| Item | Status |
+|---|---|
+| n92ap openiboot board port | **done**, builds clean |
+| Build system on modern toolchain | **done** (see §6 for the fixes) |
+| Device identification | **verified**: CPID 0x8930, BDID 0x06, `MODEL: n92ap`, `PRODUCT: iPhone3,3` |
+| limera1n pwn | **works** with a native Windows tool; `PWND: limera1n` read back via `irecovery -q` |
+| `iBSS.n92ap` (decrypted) | **done**: extracted from 5.1.1 IPSW, 65,536 B |
+| iBSS upload to bootrom | **verified**: 32/32 chunks, DFU status 5, reaches `dfuMANIFESTWAITRESET` |
+| Bootrom → iBSS jump | **blocked on the old machine**: USB/IP cannot deliver a bus reset |
+| iBSS → openiboot | not attempted yet |
+| openiboot boot | not attempted yet |
+
+**The blocker is environmental, not in the port.** On the hackintosh it is a
+non-issue: libusb's Darwin backend performs a genuine device reset.
+
+---
+
+## 3. Complete the task on macOS (the actual next steps)
+
+### 3.1 Prerequisites
+
+```sh
+xcode-select --install
+brew install libusb python3
+pip3 install pyusb
+# optional, for status checks / fallback pwn:
+brew install libirecovery || brew install libimobiledevice
+```
+
+Put this project at `~/iphone33-android`.
+
+### 3.2 Put the phone in DFU
+
+Phone powered on, cable connected. Hold **Power 3 s**, then keep Power and add
+**Home for 10 s**, release Power but keep **Home 10 s**. Screen stays black.
+
+Verify:
+
+```sh
+system_profiler SPUSBDataType | grep -A6 -i "apple.*dfu\|1227"
+# or
+ioreg -p IOUSB -l | grep -i "05ac\|1227"
+```
+
+Expect VID `0x05ac`, PID `0x1227`.
+
+### 3.3 Compile the exploit tool
+
+```sh
+cd ~/iphone33-android
+cc -O2 -o a4boot tools/a4boot.c \
+   -I"$(brew --prefix libusb)/include" \
+   -L"$(brew --prefix libusb)/lib" -lusb-1.0
+```
+
+### 3.4 Pwn + upload iBSS (with real resets)
+
+```sh
+sudo ./a4boot artifacts/limera1n.payload artifacts/iBSS.n92ap.bin reset
+```
+
+What it does (in order):
+
+1. reset DFU counters
+2. spray 0x40-byte heap headers `{0x405, 0x101, 0x8402b001, 0x8403bf9c}`
+3. fill to `0x2c000`
+4. send the 584-byte limera1n shellcode
+5. read 0x800 (must complete before step 6)
+6. submit the 0xBB write, cancel it after 10 ms ← the vulnerability
+7. `DFU_DNLOAD(0)` to execute
+8. USB reset, re-open the pwned bootrom
+9. upload `iBSS.n92ap.bin` (32 chunks, status 5 each)
+10. manifest + USB reset → bootrom jumps into iBSS
+
+Success looks like: `irecovery -q` afterwards reports a **different `SRTG`**
+(not `iBoot-574.4`). It will still be `MODE: DFU`; iBSS is a DFU-mode stage.
+
+If `a4boot` prints "no 05ac:1227 DFU device", run it under `sudo`, and make sure
+no VM/other process has claimed the device.
+
+### 3.5 Upload openiboot and jump
+
+```sh
+sudo python3 tools/dfu-upload.py --go "go jump 0x41000000" \
+     artifacts/iphone_4_cdma_openiboot.bin
+```
+
+This uploads 245,784 bytes (120 chunks) into iBSS's DFU and sends the command
+`go jump 0x41000000`. iBSS has no 180 KB buffer limit, so the size is fine.
+
+`openiboot`'s `entry.sx` relocates itself from `0x41000000` to `0x0`; that load
+address is correct and is what syringe's `loadibec` uses.
+
+### 3.6 Verify openiboot is alive
+
+The device should re-enumerate as **VID 0x0525**, product string
+`Apple Mobile Device (OpenIBoot Mode)` (`usb-synopsys/usb.c: idVendor = 0x525`).
+
+```sh
+system_profiler SPUSBDataType | grep -i -B2 -A6 "OpenIBoot"
+ls /dev/cu.usbmodem* /dev/tty.usbmodem* 2>/dev/null
+```
+
+Console: openiboot's ACM console.
+
+```sh
+screen /dev/cu.usbmodemXXXX 115200
+# or: picocom -b 115200 /dev/cu.usbmodemXXXX
+# exit screen: Ctrl-A then K
+```
+
+Expected: openiboot banner and a command prompt. This is **Stage 1 complete**.
+
+### 3.7 Fallbacks
+
+- **a4boot doesn't pwn** (device stays clean, `SRTG: iBoot-574.4`, no
+  `PWND`): try `irecovery -k artifacts/limera1n.payload` from libirecovery on
+  macOS (its IOKit limera1n path is the original working implementation), or a
+  native limera1n/redsn0w tool. Then verify `PWND:`.
+- **iBSS upload ok but SRTG unchanged**: the bus reset did not happen. Test with
+  `python3 tools/dfu_state.py` — if it shows `8 dfuMANIFESTWAITRESET`, the image
+  is accepted and only the reset is missing.
+- **openiboot doesn't enumerate**: it hung in early init. Most likely clock/PMU
+  (see §7), then display.
+
+---
+
+## 4. Artifacts (checksums)
+
+All in `artifacts/`. SHA-256:
+
+```
+37506bfa8b6e95f33fd789c8d5fcd5014f69fb366d84ba7492d7eb20f2364e63  iBSS.n92ap.bin        (65,536 B)
+664b249b9740f078a8c7255fd06597cee430458c33498f9cca2c818c053b6413  iBSS.n92ap.img3       (68,100 B, encrypted container)
+21ef74b5d47803ac5dba14a51f65c9ddeeb9572a39b352c024c03cc704cb1566  iphone_4_cdma_openiboot.bin (245,784 B)
+f1cc08d9cc50873d774c8d2f0ce4f1c69d6a7d3ed2efdc7b56cc4e78b34767bf  limera1n.payload      (584 B)
+```
+
+`iBSS.n92ap.bin` is the decrypted DATA payload (starts `0e 00 00 ea`), which is
+what the bootrom DFU wants. `iBSS.n92ap.img3` is the encrypted IMG3 as shipped.
+
+---
+
+## 5. Tool reference (`tools/`)
+
+| File | Purpose | Invocation |
+|---|---|---|
+| `build-openiboot.sh` | deps + build target | `bash tools/build-openiboot.sh` |
+| `sync.sh` | rsync Windows tree → WSL build copy | `bash tools/sync.sh` |
+| `a4boot.c` | limera1n pwn + iBSS upload | `./a4boot <payload> <ibss> [reset]` |
+| `limera1n_async.c` | pwn only (older variant) | `./limera1n_async <payload>` |
+| `limera1n.py` | pwn in Python/pyusb | `python3 limera1n.py <payload>` |
+| `dfu-upload.py` | chunked DFU upload; manifest (default) or `--go CMD` | see §3.5 |
+| `dfu_state.py` | read/advance DFU state machine | `python3 dfu_state.py` |
+| `dfu_finish.py` | probe `DFU_DETACH` / `go` | `python3 dfu_finish.py detach\|go` |
+| `ipsw_fetch.py` | extract one member of a remote IPSW via HTTP ranges | `python3 ipsw_fetch.py <url> <name-substr> <out>` |
+| `img3_payload.py` | extract + AES-128-CBC decrypt IMG3 DATA | `python3 img3_payload.py <in> <iv> <key> <out>` |
+| `extract-header.py` | convert a `0xNN,` C array to binary | `python3 extract-header.py <h> <bin>` |
+| `macos-stage1.sh` | end-to-end Stage 1 driver on macOS | `bash tools/macos-stage1.sh` |
+| `linux-stage1.sh` | end-to-end Stage 1 driver on native Linux | `bash tools/linux-stage1.sh` |
+
+---
+
+## 6. Build notes (already applied — do not redo)
+
+Target: `plat-a4/iPhone4CDMA.SConscript`, define `CONFIG_IPHONE_4_CDMA`,
+`MACH_ID=3565` (**provisional**, see §7), no `radio-xgold618` (n92 uses a
+Qualcomm MDM6600 baseband).
+
+Source changes in `src/openiBoot-master/`:
+
+- `plat-a4/SConscript`: registers the target; adds
+  `-march=armv7-a -mtune=cortex-a8 -fgnu89-inline -fcommon -Wno-error` and
+  `-Wl,-z,max-page-size=0x1000` (removes a 64 KB segment-alignment gap).
+- `plat-a4/{iPhone4CDMA.SConscript, includes/hardware/a4.h, includes/hardware/clcd.h, clcd.c, h2fmi.c}`:
+  new target + `CONFIG_IPHONE_4_CDMA` alongside `CONFIG_IPHONE_4`.
+- `Makefile`: `PLATFORM=IPHONE4CDMA`.
+- `scons/ARMEnvironment.SConscript`: dropped `--nostdlib` (GCC rejects it),
+  Python-3 `in` instead of `has_key`.
+- `scons/Git.SConscript`: py3-safe, returns `unknown` off a git tree.
+- `scons/Module.SConscript`: py3 `print`, removed a dead `Export()` that SCons 4
+  rejects.
+- `scons/Doxygen.SConscript`: decode bytes, iterate a copy of the dict.
+- `mk8900image/SConscript`: `-no-pie` for the host tool (prebuilt static libs).
+- `mk8900image/mk8900image.c`: local prototype for `init_libxpwn`.
+- `plat-a4/includes/h2fmi.h`: `AESKeyLen` prototype + include (real type clash).
+
+Build:
+
+```sh
+cd src/openiBoot-master
+CROSS=arm-none-eabi- scons -j8 iPhone4CDMA
+```
+
+Output: `iphone_4_cdma_openiboot.bin`, 245,784 B, ARMv7 EXEC, entry 0x0,
+load segments at 0x0 and 0x320c0.
+
+Control build for sanity: `scons iPhone4` (n90ap) → 309,912 B, nearly identical
+structure (difference is the X-Gold radio module).
+
+---
+
+## 7. Technical reference
+
+### 7.1 DFU protocol on A4
+
+- Upload: control `0x21/1` (DFU_DNLOAD), chunks of `0x800`, `wValue=0`.
+  After each chunk read status `0xA1/3` (6 bytes); byte 4 must be `5`
+  (`dfuDNLOADIDLE`).
+- End of download: zero-length `0x21/1`.
+- States observed: `2 dfuIDLE`, `5 dfuDNLOADIDLE`, `6 dfuMANIFESTSYNC`,
+  `7 dfuMANIFEST`, `8 dfuMANIFESTWAITRESET`.
+- The bootrom **only executes the image after a USB bus reset**. `DFU_DETACH`
+  and a `go` command are ignored. A physical unplug does **not** work: it drops
+  VBUS and returns DFU to `dfuIDLE`, discarding the image.
+- Bootrom DFU buffer limit is `0x2c000` (180,224 B): a 307 KB upload aborts at
+  exactly 58.7 % / chunk 88. A 176 KB upload completes. This is why iBSS is
+  required for larger payloads.
+- USB/IP (`usbipd` + WSL) cannot deliver the reset: `libusb_reset_device` only
+  resets the virtual vhci port, and `usbipd detach/attach` behaves like a
+  disconnect. This is the blocker that does not exist on macOS.
+
+### 7.2 limera1n (A4)
+
+- `max_size = 0x2c000`, `stack = 0x8403bf9c`, `shellcode = 0x8402b001`.
+- Heap spray: 0x800 bytes of 0x40-byte records `{0x405, 0x101, shellcode, stack}`.
+- 584-byte Thumb payload (geohot's), extracted from syringe
+  `external/Win32/limera1n.h`.
+- The exploit needs an **abortable** EP0 transfer (IOKit
+  `USBDeviceAbortPipeZero`; libusb submit+cancel; original Linux used a 10 ms
+  timeout). USB/IP makes the abort local-only, so the pwn cannot land there.
+- Verify pwn with `irecovery -q` → `PWND: limera1n`. Pwn is RAM-only: a power
+  cycle clears it, so it must be redone every boot.
+
+### 7.3 iBSS for n92ap
+
+- IPSW: `https://secure-appldnld.apple.com/iOS5.1.1/041-4291.20120427.Zs8F0/iPhone3,3_5.1.1_9B206_Restore.ipsw`
+  (829,725,323 B).
+- Member: `Firmware/dfu/iBSS.n92ap.RELEASE.dfu` (deflate).
+- iOS 5.1.1 keys: IV `30121b6c9866b26fe5082ea3001de870`,
+  key `4ce2b4a380a6df017ca101020e4af9aca892ce96a80bd664b12a75ac9d8f8ce4`.
+- IMG3 tags are 4CCs stored as little-endian uint32, so on disk they read
+  `ATAD` (`DATA`) and `EPYT` (`TYPE`). Tag header is 12 bytes and `totalLen`
+  includes it.
+- Other versions' keys are on theapplewiki keys pages if 5.1.1 is ever a problem.
+
+### 7.4 Provisional values / risks
+
+- **`MACH_ID 3565` is unverified.** It is only the Linux ATAG machine number
+  (`actions.c`), so it does not affect openiboot booting or the console.
+  Verify against the n92ap device tree before booting a kernel
+  (DeviceTree.n92ap.img3 from an IPSW).
+- **Display**: n92ap uses DISPLAYID 0 (iPhone 4 panel). Panel-ID handshake may
+  differ; check `pinot_panel_id` if the screen stays dark.
+- **NAND**: h2fmi tables were copied from n90ap. **Do not write NAND.**
+  Upstream's README warns A4 NAND writes can cause permanent block damage.
+  Everything in this workflow is RAM-only.
+- **PMU/clock init** is the most likely early-boot hang point.
+- Baseband (MDM6600) is not driven at all — fine for a console.
+
+---
+
+## 8. After Stage 1
+
+1. Confirm console, dump chip IDs, PMU and panel IDs.
+2. n92ap device tree for mainline Linux (6.13+ has bare-bones A4 DT support;
+   n92ap is **not** upstream — n90ap only).
+3. Minimal initramfs + USB networking (this is the ceiling postmarketOS reached
+   on n90ap).
+4. Display/touch/storage drivers do not exist for any A4 phone. Android needs
+   all three. Treat Android as a research project, not a deliverable.
+
+---
+
+## 9. Repo layout
+
+```
+iphone33-android/
+├─ HANDOFF.md                  <- this file
+├─ docs/PORT-n92ap.md          <- port notes + bring-up log
+├─ artifacts/                  <- built binaries (see §4)
+├─ tools/                      <- scripts and exploit sources (see §5)
+└─ src/openiBoot-master/       <- patched openiboot tree
+```
+
+WSL build copy (old machine only): `~/iphone33-android` (same tree).
