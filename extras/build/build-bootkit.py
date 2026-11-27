@@ -2,10 +2,11 @@
 """Persistent, self-verifying builder for the iPhone3,3 Android boot kit.
 
 Rebuilds from pristine sources every time (no incremental drift):
-  bootkit/zImage      - instrumented zImage (decompressor + handoff)
-  bootkit/kcaves.bin  - checkpoint blob, uploaded to PA 0x300000
-  bootkit/stub.bin    - boot stub (built by build-t4stub.py)
-  bootkit/boot-android.sh - one-shot boot script (absolute paths)
+  boot/zImage      - instrumented zImage (decompressor + handoff)
+  boot/kcaves.bin  - checkpoint blob, uploaded to PA CB (0x00E00000)
+  boot/stub.bin    - boot stub (built by build-t4stub.py)
+Run from anywhere: python3 extras/build/build-bootkit.py [phone|qemu]
+The upload addresses live in ../../boot.sh - keep them in sync with CB.
 
 Every address below is derived from named constants, and the build ends
 with a full audit that re-derives page-table slots independently. If any
@@ -29,13 +30,13 @@ Key facts (verified against pristine t4-vmlinux.bin):
 import gzip, os, struct, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(HERE)
-KIT = os.path.join(ROOT, "bootkit")   # replaced by set_profile()
+ROOT = os.path.dirname(os.path.dirname(HERE))   # repo root (this file: extras/build/)
+KIT = os.path.join(ROOT, "boot")   # replaced by set_profile()
 
-KERNEL_SRC = os.environ.get("T4_KERNEL", os.path.expanduser("~/Desktop/iphone3,3/t4-kernel.bin"))
-VMLINUX_SRC = os.environ.get("T4_VMLINUX", os.path.expanduser("~/Desktop/iphone3,3/t4-vmlinux.bin"))
-INITRD_SRC = os.environ.get("T4_INITRD", os.path.expanduser("~/Desktop/iphone3,3/t4-initrd.bin"))
-OIBSEND = os.path.join(HERE, "oibsend.py")
+KERNEL_SRC = os.environ.get("T4_KERNEL", os.path.join(HERE, "t4-kernel.bin"))
+VMLINUX_SRC = os.environ.get("T4_VMLINUX", os.path.join(HERE, "t4-vmlinux.bin"))
+INITRD_SRC = os.environ.get("T4_INITRD", os.path.join(ROOT, "boot", "t4-initrd.bin"))
+OIBSEND = os.path.join(ROOT, "tools", "oibsend.py")
 
 FB, FBE = 0x0F700000, 0x0FA00000          # physical framebuffer (xRGB8888)
 KB, CB = 0x8000, 0x300000                 # kernel PA base / cave blob PA
@@ -57,7 +58,7 @@ def set_profile(name):
         FB, FBE = 0x0F700000, 0x0FA00000
         VCB = 0xC0000000 + (CB - RAM_BASE)
         SCTLR_MINIMAL = False      # phone: was True (caches OFF -> Android ~10-30x slow); kernel mask OK since run7
-        KIT = os.path.join(ROOT, "bootkit")
+        KIT = os.path.join(ROOT, "boot")
     elif name == "qemu":
         # virt: RAM 0x40000000..0x50000000. zrel 0x40008000, PT at +16KB,
         # bss 0x4028D9C0..0x403CA020 -> blob at 0x41800000 (free, between
@@ -66,7 +67,7 @@ def set_profile(name):
         FB, FBE = 0x4F800000, 0x4F801000
         VCB = 0xC0000000 + (CB - RAM_BASE)
         SCTLR_MINIMAL = False      # qemu: the kernel's own mask works (A7)
-        KIT = os.path.join(ROOT, "bootkit", "qemu")
+        KIT = os.path.join(ROOT, "extras", "qemu")
     else:
         raise ValueError(name)
 VB, VCB = 0xC0008000, 0xC0300000          # kernel VA base / blob VA base
@@ -783,16 +784,9 @@ qemu-system-arm -M virt -cpu cortex-a7 -m 256M -nographic -serial none \\
         open(os.path.join(KIT, "run-qemu.sh"), "w").write(sh)
         os.chmod(os.path.join(KIT, "run-qemu.sh"), 0o755)
     else:
-        sh = """#!/usr/bin/env bash
-# Boot chain (self-healing: bus reset + retry on ACM stalls).
-set -e
-cd "%(kit)s"
-python3 "%(oibsend)s" boot \\
-  zImage 0x44000000 %(initrd)s 0x09000000 kcaves.bin 0x%(cb)08x stub.bin 0x04200000 \\
-  --go "go 0x04200000"
-""" % {"kit": KIT, "oibsend": OIBSEND, "initrd": INITRD_SRC, "cb": CB}
-        open(os.path.join(KIT, "boot-android.sh"), "w").write(sh)
-        os.chmod(os.path.join(KIT, "boot-android.sh"), 0o755)
+        # boot.sh (repo root) uploads kcaves.bin to 0x00e00000
+        if CB != 0x00E00000:
+            print("WARNING: CB=0x%08x - update the kcaves.bin address in boot.sh" % CB)
 
     print("AUDIT PASSED: %d checks" % n)
     print("kit: %s (zImage %d bytes, delta %+d, pad %d, kcaves %d)" %
