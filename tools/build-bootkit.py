@@ -32,9 +32,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 KIT = os.path.join(ROOT, "bootkit")   # replaced by set_profile()
 
-KERNEL_SRC = os.path.expanduser("~/Downloads/t4-kernel.bin")
-VMLINUX_SRC = os.path.expanduser("~/Downloads/t4-vmlinux.bin")
-INITRD_SRC = os.path.expanduser("~/Downloads/t4-initrd.bin")
+KERNEL_SRC = os.environ.get("T4_KERNEL", os.path.expanduser("~/Desktop/iphone3,3/t4-kernel.bin"))
+VMLINUX_SRC = os.environ.get("T4_VMLINUX", os.path.expanduser("~/Desktop/iphone3,3/t4-vmlinux.bin"))
+INITRD_SRC = os.environ.get("T4_INITRD", os.path.expanduser("~/Desktop/iphone3,3/t4-initrd.bin"))
 OIBSEND = os.path.join(HERE, "oibsend.py")
 
 FB, FBE = 0x0F700000, 0x0FA00000          # physical framebuffer (xRGB8888)
@@ -50,10 +50,13 @@ def set_profile(name):
         # [1d0]/[1d4]) -> the blob MUST sit outside that and inside the
         # +-32MB branch range of the kernel head (KB..KB+32M).
         # 0x1000000 (16MB): free (zImage window 64MB, initrd 144MB, stub 66MB).
-        BASE, KB, CB, RAM_BASE = 0x44000000, 0x8000, 0x1000000, 0x0
+        # 2026-11-26 run4 log: kernel fell back to default 16 MB (ATAGs not
+        # seen) and Oopsed returning into the blob at 0x1000000 (= first
+        # unmapped byte). Blob now at 14 MB so it stays mapped either way.
+        BASE, KB, CB, RAM_BASE = 0x44000000, 0x8000, 0x00E00000, 0x0
         FB, FBE = 0x0F700000, 0x0FA00000
         VCB = 0xC0000000 + (CB - RAM_BASE)
-        SCTLR_MINIMAL = True       # phone: A4 may reject kernel SCTLR mask bits
+        SCTLR_MINIMAL = False      # phone: was True (caches OFF -> Android ~10-30x slow); kernel mask OK since run7
         KIT = os.path.join(ROOT, "bootkit")
     elif name == "qemu":
         # virt: RAM 0x40000000..0x50000000. zrel 0x40008000, PT at +16KB,
@@ -67,6 +70,16 @@ def set_profile(name):
     else:
         raise ValueError(name)
 VB, VCB = 0xC0008000, 0xC0300000          # kernel VA base / blob VA base
+# Diagnostic record area (read back with: oiblog.py 0x0F600000 0x100).
+# Outside the default 16 MB lowmem, below openiboot's FB (0x0F700000).
+#  +00 stub: 'STB1', r2, openiboot SCTLR, TTBR0   +20: 8 words @0x100
+#  +40 k1 (kernel entry, MMU off): 'K1__', r1, r2  +60: 8 words @[r2]
+#  +80 v2/v3: 'VOK!' / 'VBAD'
+#  +A0 m4 (before setup_arch, VA): 'M4__', __atags_pointer  +C0: 8 words @VA 0xC0000100
+REC = 0x0F600000
+VREC = 0xC0000000 + REC
+ATAGS_PTR_VA = 0xC001D0F8                # __atags_pointer (from __mmap_switched pool)
+MID_OFFS = set()                         # blob offsets of re-encoded VA bl words (audit skip)
 BASE = 0x44000000                         # zImage load PA
 PAGE_OFFSET = 0xC0000000
 VFB = PAGE_OFFSET + FB                    # 0xCF700000  <-- the fixed value
@@ -214,21 +227,47 @@ def build_blob():
     # cD: not-found hang.
     o["cD"] = add(lambda b: cave(b, (0, 1, 2), 0x0000FFFF, [0xEAFFFFFE], KB + 0x10), 14)
     # k1: replaces bl __vet_atags (PA 0x8024). r1/r2/r4/r8/r10 live; (0,3,6).
-    o["k1"] = add(lambda b: cave(b, (0, 3, 6), 0x00FF8000, [], KB + 0x28)[:-1]
-                  + [BL(b + 9 * 4, KB + 0x138)] + cave(b, (0, 3, 6), 0, [], KB + 0x28)[10:]
-                  if False else _cave_bl(b, (0, 3, 6), 0x00FF8000, KB + 0x138, KB + 0x28), 14)
+    def k1(b):
+        a = Asm(b)
+        a.paint((0, 3, 6), 0x00FF8000)              # orange
+        a.ldr(0, "R40"); a.ldr(3, "MK1")
+        a.emit(0xE4803004)                          # str r3,[r0],#4
+        a.emit(0xE4801004)                          # str r1,[r0],#4
+        a.emit(0xE4802004)                          # str r2,[r0],#4
+        a.emit(0xE2800014)                          # add r0,r0,#0x14 -> REC+0x60
+        a.emit(0xE3520201)                          # cmp r2,#0x10000000
+        a.br(0x2A, "k1skip")                        # bhs skip (not RAM)
+        a.emit(0xE3C23003)                          # bic r3,r2,#3
+        a.label("k1cp")
+        a.emit(0xE4936004)                          # ldr r6,[r3],#4
+        a.emit(0xE4806004)                          # str r6,[r0],#4
+        a.emit(0xE310001F)                          # tst r0,#0x1F
+        a.br(0x1A, "k1cp")
+        a.label("k1skip")
+        a.bl(KB + 0x138)                            # bl __vet_atags
+        a.bext(KB + 0x28)
+        return a.finish({"R40": REC + 0x40, "MK1": 0x5F5F314B}, FB, FBE)
+    o["k1"] = add(k1, None)
     # k2: replaces bl __create_page_tables (PA 0x8028). r4/r8/r10 live; (0,3,6).
     o["k2"] = add(lambda b: _cave_bl(b, (0, 3, 6), 0x008000FF, KB + 0x4C, KB + 0x2C), 14)
     # k3: replaces mov r8,r4 (PA 0x8034). r0 live (pre-v7_setup: dead); (0,3,6).
     o["k3"] = add(lambda b: cave(b, (0, 3, 6), 0x000080FF, [0xE1A08004], KB + 0x38), 14)
     # k4: replaces b 0x810C (PA 0x803C). r0 = SCTLR VALUE - LIVE! scratch (3,5,6).
     o["k4"] = add(lambda b: cave(b, (3, 5, 6), 0x00FF0080, [], KB + 0x10C), 13)
-    # v1: vet entry (PA 0x8138). re-exec tst r2,#3. r1/r2/r9 live; (0,5,6).
-    o["v1"] = add(lambda b: cave(b, (0, 5, 6), 0x00FF8080, [0xE3320003], KB + 0x13C), 14)
+    # v1: vet entry (PA 0x8138). re-exec tst r2,#3 (0xE3120003; was TEQ 0xE3320003 = vet ALWAYS failed). r1/r2/r9 live; (0,5,6).
+    o["v1"] = add(lambda b: cave(b, (0, 5, 6), 0x00FF8080, [0xE3120003], KB + 0x13C), 14)
     # v2: vet OK return (PA 0x8160) - mov pc,lr, hang-free exit.
-    o["v2"] = add(lambda b: cave(b, (0, 5, 6), 0x0080FF00, [0xE1A0F00E], None), 13)
+    def vres(b, col, magic, tail):
+        a = Asm(b)
+        a.paint((0, 5, 6), col)
+        a.ldr(0, "R80"); a.ldr(5, "VM")
+        a.emit(0xE5805000)                          # str r5,[r0]
+        for w_ in tail:
+            a.emit(w_)
+        return a.finish({"R80": REC + 0x80, "VM": magic}, FB, FBE)
+    o["v2"] = add(lambda b: vres(b, 0x0080FF00, 0x214B4F56, [0xE1A0F00E]), None)   # 'VOK!'
     # v3: vet fail return (PA 0x8164) - mov r2,#0; mov pc,lr.
-    o["v3"] = add(lambda b: cave(b, (0, 5, 6), 0x00008080, [0xE3A02000, 0xE1A0F00E], None), 14)
+    o["v3"] = add(lambda b: vres(b, 0x00008080, 0x44414256, [0xE3A02000, 0xE1A0F00E]), None)  # 'VBAD'
 
     # m0: replaces mov r5,#0x15 (PA KB+0x110). PRE-MMU. r0 = SCTLR live!
     # Verifies r4 (TTBR), and the five page-table words that must exist
@@ -339,9 +378,24 @@ def build_blob():
     _orig = open(VMLINUX_SRC, "rb").read()
     for nm, off_, col in M_SITES:
         mid_word = struct.unpack_from("<I", _orig, off_)[0]
-        def mk2(nm=nm, off_=off_, col=col, mid_word=mid_word, _base_off=off):
+        def mk2(_b, nm=nm, off_=off_, col=col, mid_word=mid_word, _base_off=off):
             a = Asm(VCB + _base_off)
-            a.paint((1, 2, 12), col)
+            if nm in ("m3", "m4"):
+                a.paint((1, 2, 12), col)
+            if nm == "m4":
+                a.ldr(1, "RA0"); a.ldr(2, "MM4")
+                a.emit(0xE4812004)                  # str r2,[r1],#4
+                a.ldr(2, "ATP")
+                a.emit(0xE5922000)                  # ldr r2,[r2]
+                a.emit(0xE4812004)                  # str r2,[r1],#4
+                a.emit(0xE2811018)                  # add r1,r1,#0x18 -> +C0
+                a.ldr(12, "T100")
+                a.label("m4cp")
+                a.emit(0xE49C2004)                  # ldr r2,[r12],#4
+                a.emit(0xE4812004)                  # str r2,[r1],#4
+                a.emit(0xE311001F)                  # tst r1,#0x1F
+                a.br(0x1A, "m4cp")
+            MID_OFFS.add(_base_off + 4 * len(a.ins))
             if (mid_word >> 24) == 0xEB:
                 # bl is POSITION-DEPENDENT: re-executing the raw word from
                 # the cave would target cave+delta. Re-encode to the call's
@@ -352,7 +406,9 @@ def build_blob():
             else:
                 a.emit(mid_word)
             a.bext(VB + off_ + 4)
-            return a.finish({}, FB, FBE)
+            return a.finish({"RA0": VREC + 0xA0, "MM4": 0x5F5F344D,
+                             "ATP": ATAGS_PTR_VA, "T100": 0xC0000100}
+                            if nm == "m4" else {}, FB, FBE)
         o[nm] = add(mk2, None)
 
     blob = b"".join(struct.pack("<I", w) for c in caves for w in c)
@@ -371,6 +427,8 @@ def _cave_bl(base, scratch, color, call, ret):
 # ----------------------------------------------------------------------------
 # 2. vmlinux patch set (branch words only - image stays original size)
 # ----------------------------------------------------------------------------
+COMPOSITE_SUSPEND = 0xC013E06C - 0xC0008000   # vmlinux file offset
+
 def patch_vmlinux(offs):
     v = bytearray(open(VMLINUX_SRC, "rb").read())
     assert len(v) == 2644416
@@ -391,6 +449,11 @@ def patch_vmlinux(offs):
         struct.pack_into("<I", v, off_, B(VB + off_, VCB + (offs[nm] - CB)))
     # 256MB kernel-VA map AND 256MB identity map (covers PA FB 0x0F700000,
     # so post-MMU PA paints work without touching the kernel VA map).
+    # run6 Oops: composite_suspend+0x88 derefs 0x01000690 (bad function in
+    # cdev->config list) on USB bus suspend with a PC attached. It only
+    # forwards suspend to gadget functions -> make it return at once.
+    assert struct.unpack_from("<I", v, COMPOSITE_SUSPEND)[0] == 0xE92D4070
+    struct.pack_into("<I", v, COMPOSITE_SUSPEND, 0xE12FFF1E)        # bx lr
     struct.pack_into("<I", v, 0xFC, 0xD0000000)
     struct.pack_into("<I", v, 0x108, 0xD0000000)
     return v
@@ -410,7 +473,7 @@ def build_zimage(patched_v):
     # real cave code lives in kcaves.bin, not in the vmlinux tail).
     FILLER = bytes(((0xA5 + i * 13) & 0xFF) for i in range(64))
     pad = None
-    for n in range(0, 4):
+    for n in range(0, 64):   # 0..3 is not always enough; limit is TRUNCATION_LIMIT
         pig = gzip.compress(bytes(patched_v) + FILLER[:n], 9)
         if (len(pig) - OLD_PIGGY_LEN) % 4 == 0:
             pad = n
@@ -538,7 +601,7 @@ def audit(zimg, blob, offs):
     delta = params[1] - 0x1493C0
     plen = OLD_PIGGY_LEN + delta
     vv = gzip.decompress(zimg[PIGGY_OFF:PIGGY_OFF + plen])
-    chk(2644416 <= len(vv) <= 2644416 + 3, "vv size %d" % len(vv))
+    chk(2644416 <= len(vv) <= 2644416 + 63, "vv size %d" % len(vv))   # pad lands in .bss (zeroed)
     chk(len(vv) < TRUNCATION_LIMIT, "decompressed %d over truncation limit" % len(vv))
     for off, nm in [(0x00, "c0"), (0x0C, "cA"), (0x12F94, "cL"), (0x12FD4, "cD"),
                     (0x24, "k1"), (0x28, "k2"), (0x34, "k3"), (0x3C, "k4"),
@@ -548,6 +611,7 @@ def audit(zimg, blob, offs):
     for off, nm in [(0x184, "m1"), (0x1C4, "m2")] + [(o_, n) for n, o_, _c in M_SITES]:
         t = brtarget(struct.unpack_from("<I", vv, off)[0], VB + off)
         chk(t == VCB + (offs[nm] - CB), "v[%x]->%s(VA) = %x" % (off, nm, t))
+    chk(struct.unpack_from("<I", vv, COMPOSITE_SUSPEND)[0] == 0xE12FFF1E, "composite_suspend bx lr")
     chk(struct.unpack_from("<I", vv, 0xFC)[0] == 0xD0000000, "0xFC")
     chk(struct.unpack_from("<I", vv, 0x108)[0] == 0xD0000000, "0x108")
     # only intended words differ from pristine
@@ -567,7 +631,7 @@ def audit(zimg, blob, offs):
     # offs values are ABSOLUTE PA (0x300000+); convert to file offsets here.
     chk(len(blob) % 4 == 0, "blob alignment")
     # m2 is 13 words; allow its tail to reach the blob end exactly
-    chk(max(offs.values()) + 52 <= CB + len(blob), "blob covers all cave offsets")
+    chk(max(offs.values()) + 16 <= CB + len(blob), "blob covers all cave offsets")
     for nm, scr in (("c0", (0, 3, 4)), ("cL", (0, 4, 5)), ("cA", (0, 3, 4)),
                     ("cD", (0, 1, 2)), ("k1", (0, 3, 6)), ("k2", (0, 3, 6)),
                     ("k3", (0, 3, 6)), ("k4", (3, 5, 6)), ("v1", (0, 5, 6)),
@@ -585,7 +649,7 @@ def audit(zimg, blob, offs):
     # every branch in blob lands somewhere sane — EXCEPT the m3-m10 caves'
     # mid words (the original bl instructions, re-executed data, decoded
     # here would use blob-relative offsets = garbage by design)
-    skip_mids = {offs[nm] - CB + 36 for nm, _o, _c in M_SITES}
+    skip_mids = set(MID_OFFS)
     for o in range(0, len(blob) - 3, 4):
         if o in skip_mids:
             continue

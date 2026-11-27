@@ -41,6 +41,7 @@ class OIB:
         except Exception:
             pass
         self._stop = threading.Event()
+        self.log = ""
         if drain:
             threading.Thread(target=self._drain, daemon=True).start()
 
@@ -48,7 +49,9 @@ class OIB:
         while not self._stop.is_set():
             try:
                 data = self.dev.read(EP_IN, 4096, timeout=500)
-                sys.stderr.write(data.tobytes().decode(errors="replace"))
+                txt = data.tobytes().decode(errors="replace")
+                self.log = (self.log + txt)[-65536:]
+                sys.stderr.write(txt)
                 sys.stderr.flush()
             except usb.core.USBError:
                 pass
@@ -69,8 +72,46 @@ class OIB:
         self.write(text.encode() + b"\n")
         time.sleep(0.1)
 
+    def wait_ack(self, end, timeout):
+        """openiboot prints 'Received file (finished at 0x%08x)!' when the
+        whole file arrived; while it is still receiving it prints nothing."""
+        want = "finished at 0x%08x" % end
+        t = time.time()
+        while time.time() - t < timeout:
+            if want in self.log:
+                return True
+            time.sleep(0.1)
+        return False
+
     def up(self, path, addr):
         data = open(path, "rb").read()
+        for attempt in range(1, 4):
+            self._up_once(path, addr, data)
+            # openiboot only flushes its console when the host sends
+            # something: nudge with an empty command line (harmless when the
+            # file is complete; 1 byte of padding if it is still receiving).
+            ok = self.wait_ack(addr + len(data), 1)
+            if not ok:
+                self.write(b"\n")
+                ok = self.wait_ack(addr + len(data), 5)
+            if ok:
+                print("acked: 0x%x" % (addr + len(data)))
+                return
+            # packets were lost: openiboot is still waiting for bytes. Pad
+            # with zeros until it closes the file, then upload it again.
+            print("NO ACK (attempt %d) - padding to unwedge" % attempt, flush=True)
+            pad = 0
+            while not self.wait_ack(addr + len(data), 0.3):
+                self.write(b"\0" * 512)
+                pad += 512
+                if pad > (8 << 20):
+                    sys.exit("openiboot never closed the file after 8 MB padding")
+            print("unwedged after %d pad bytes; re-uploading" % pad, flush=True)
+            self.log = ""
+        sys.exit("upload of %s never acked" % path)
+
+    def _up_once(self, path, addr, data):
+        self.log = ""
         print("uploading %s (%d bytes) -> 0x%x" % (path, len(data), addr))
         self.write(b"sendfile 0x%x %d\n" % (addr, len(data)))
         time.sleep(0.1)

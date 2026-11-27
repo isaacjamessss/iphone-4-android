@@ -16,7 +16,7 @@ Usage: build-t4stub.py [out.bin]
 import struct
 import sys
 
-RUN = 0x04000000
+RUN = 0x04200000   # MUST match the oibsend load/go address (was 0x04000000: ATAGs copied from junk -> kernel default 16MB, no cmdline/initrd)
 KERNEL_SRC = 0x44000000          # zImage entry word hardcodes 0x44000000!
 KERNEL = 0x44000000              # jump target = the zImage entry
 KERNEL_LEN = 0x1493BC
@@ -31,8 +31,8 @@ DELAY = 0x00800000
 MAGENTA = 0x00FF00FF
 RED = 0x00FF0000
 GREEN = 0x0000FF00
-CMDLINE = (b"console=t4fb0 loglevel=8 ignore_loglevel rdinit=/init panic=0 "
-           b"t4fb=0x0F700000 t4_test=T4_ANDROID_TOUCH_03 slub_debug=FZPU noalign")
+CMDLINE = (b"console=t4fb0 loglevel=4 rdinit=/init panic=0 "
+           b"t4fb=0x0F700000 noalign")   # run6 had loglevel=8 ignore_loglevel slub_debug=FZPU t4_test=..
 
 
 def w(*vals):
@@ -50,14 +50,17 @@ def build():
         w(len(cl_pad) // 4 + 2, 0x54410009), cl_pad,
         w(0, 0),
     ])
-    pool_off = 0xB4
-    atag_addr = RUN + pool_off + 14 * 4
+    REC, STB1 = 0x0F600000, 0x31425453
+    NINS = 60
+    pool_off = NINS * 4
+    atag_addr = RUN + pool_off + 16 * 4
     values = [FB, FB_FILL_END, MAGENTA, KERNEL_SRC, KERNEL, KERNEL_LEN,
               KERNEL_MAGIC, RED, GREEN, DELAY, atag_addr,
               atag_addr + len(atags), MACHINE,
-              KERNEL + 0x20]  # entry = after the ARM vector table
+              KERNEL + 0x20,  # entry = after the ARM vector table
                                # (vectors at +0..+0x1F are hang-stubs;
                                #  the real code starts with `b` at +0x20)
+              REC, STB1]
 
     def L(rt, slot, addr):
         return 0xE59F0000 | (rt << 12) | (pool_off + 4 * slot - (addr + 8))
@@ -77,12 +80,23 @@ def build():
         L(3, 9, 0x7C), 0xE2533001, 0x1AFFFFFD,         # delay
         L(3, 10, 0x88), 0xE3A04C01, L(5, 11, 0x90),    # copy atags
         0xE4930004, 0xE4840004, 0xE1530005, 0x1AFFFFFB,
-        0xE3A00000, L(1, 12, 0xA8), 0xE3A02C01,        # r0=0, r1=mach, r2=0x100
-        L(15, 13, 0xB0),                               # ldr pc, =kernel
+        # --- diagnostic record @REC (0xA4) ---
+        L(6, 14, 0xA4), L(7, 15, 0xA8),
+        0xE4867004,                                    # str r7,[r6],#4  'STB1'
+        0xE3A00C01, 0xE4860004,                        # r2 value (0x100)
+        0xEE110F10, 0xE4860004,                        # SCTLR
+        0xEE120F10, 0xE4860004,                        # TTBR0
+        0xE2866010,                                    # add r6,r6,#0x10 -> +0x20
+        0xE3A04C01,                                    # mov r4,#0x100
+        0xE4940004, 0xE4860004,                        # ldr r0,[r4],#4; str r0,[r6],#4
+        # (loop control below)
     ]
-    assert len(ins) == 45
+    ins += [0xE316001F, 0x1AFFFFFB]                    # tst r6,#0x1F; bne copy
+    base = len(ins) * 4
+    ins += [0xE3A00000, L(1, 12, base + 4), 0xE3A02C01,   # r0=0, r1=mach, r2=0x100
+            L(15, 13, base + 12)]                          # ldr pc, =kernel
+    assert len(ins) == NINS, len(ins)
     stub = w(*ins) + w(*values) + atags
-    assert len(w(*ins)) == 0xB4
     return stub
 
 

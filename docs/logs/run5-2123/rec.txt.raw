@@ -1,0 +1,65 @@
+tasks: Initialized bootstrap.
+tasks: Initialized irq.
+miu: epoch mismatch
+tasks: Initialized uart reader.
+clocks: Reconfigured clock 14 to 51300000. (0xa0000014)
+clocks: Reconfigured clock 36 to 51300000. (0xb0000001)
+clcd: Clock configured at 51300000.
+pinot_init()
+tasks: Last thread cannot sleep!
+mipi_dsim_init()
+clcd: p=2, m=57, s=1
+tasks: Last thread cannot sleep!
+tasks: Last thread cannot sleep!
+pinot_init(): pinot_panel_id:      0xb2d105c8
+pinot_init(): pinot_default_color: 0x00000000
+pinot_init(): pinot_backlight_cal: 0x00000000
+tasks: Last thread cannot sleep!
+tasks: Last thread cannot sleep!
+tasks: Last thread cannot sleep!
+No Gamma table found for display_id: 0xb2d105c8
+init: Initializing boot modules.
+init: Initializing modules.
+tasks: Last thread cannot sleep!
+tasks: Last thread cannot sleep!
+fmi: Found chip ID ec d7 94 7a 54 43 on fmi0:ce0.
+fmi: Found chip ID ec d7 94 7a 54 43 on fmi1:ce8.
+fmi: NAND board ID: (2, 1, 0x7a94d7ec, 0x0, 2, 0x0, 0x0, 0).
+fmi: No support for board.
+tasks: Initialized ACM.
+USB: Hardware Configuration
+    HWCFG1 = 0x00000264
+    HWCFG2 = 0x228f60d0
+    HWCFG3 = 0x07e800e8
+    HWCFG4 = 0xdbf08030
+radio: comm board detected.
+ACM: Ready.
+radio: no response from baseband!
+  ___                   _ ____              _   
+ / _ \ _ __   ___ _ __ (_) __ )  ___   ___ | |_ 
+| | | | '_ \ / _ \ '_ \| |  _ \ / _ \ / _ \| __|
+| |_| | |_) |  __/ | | | | |_) | (_) | (_) | |_ 
+ \___/| .__/ \___|_| |_|_|____/ \___/ \___/ \__|
+      |_|                                       
+
+version: openiboot 0.3 commit b0e6178b for iPhone 4
+ACM: Starting hexdump 0xf600000 256
+dumping memory 0xf600000 - 0xf600100
+0f600000  53 54 42 31 00 01 00 00  78 08 c5 00 00 80 ff 5f  |STB1....x......_|
+0f600010  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+0f600020  05 00 00 00 01 00 41 54  01 00 00 00 00 10 00 00  |......AT........|
+0f600030  00 00 00 00 04 00 00 00  02 00 41 54 00 00 00 10  |..........AT....|
+0f600040  4b 31 5f 5f ec 0d 00 00  00 01 00 00 00 00 00 00  |K1__............|
+0f600050  a0 9e 56 1c a0 b0 56 1c  60 9e 56 1c 00 00 00 00  |..V...V.`.V.....|
+0f600060  05 00 00 00 01 00 41 54  01 00 00 00 00 10 00 00  |......AT........|
+0f600070  00 00 00 00 04 00 00 00  02 00 41 54 00 00 00 10  |..........AT....|
+0f600080  56 42 41 44 00 00 00 00  30 b0 56 1c 00 00 00 00  |VBAD....0.V.....|
+0f600090  24 f7 15 3b 00 00 00 00  00 00 00 00 00 00 00 00  |$..;............|
+0f6000a0  4d 34 5f 5f 00 00 00 00  50 b0 56 1c 01 00 00 00  |M4__....P.V.....|
+0f6000b0  11 00 00 00 0e 00 00 00  c0 b0 56 1c 00 00 00 00  |..........V.....|
+0f6000c0  05 00 00 00 01 00 41 54  01 00 00 00 00 10 00 00  |......AT........|
+0f6000d0  00 00 00 00 04 00 00 00  02 00 41 54 00 00 00 10  |..........AT....|
+0f6000e0  4c f7 15 3b 00 00 00 00  00 00 00 00 00 00 00 00  |L..;............|
+0f6000f0  20 9d 56 1c a0 b2 56 1c  c0 b5 56 1c 01 4e 54 53  | .V...V...V..NTS|
+
+ACM: Done: hexdump 0xf600000 256.

@@ -1,0 +1,575 @@
+<6>Initializing cgroup subsys cpu
+<5>Linux version 3.0.8 (peterdobby@iMacPro) (gcc version 4.8 (GCC) ) #25 Thu Oct 22 22:43:23 CST 2026
+<4>CPU: ARMv7 Processor [412fc082] revision 2 (ARMv7), cr=00000001
+<4>CPU: VIPT nonaliasing data cache, VIPT aliasing instruction cache
+<4>Machine: Apple iPod Touch 4G
+<6>debug: ignoring loglevel setting.
+<5>T4_ALIGN before=00c50079 after=00c50079
+<5>T4_ALIGN native early noalign active
+<4>Memory policy: ECC disabled, Data cache writeback
+<6>console [t4fb0] enabled
+<5>T4_LINUX_RAM_01: Linux printk console active; no storage mounted
+<4>CPU S5L8930 (id 0x00008930)
+<4>s5l8930_cpu_map_io
+<4>s5l8930_cpu_map_io done
+<6>S3C24XX Clocks, Copyright 2004 Simtec Electronics
+<5>T4_CLK gate=15 enable=1 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=000002ff
+<5>T4_CLK gate=02 enable=0 BEGIN
+<5>T4_CLK gate=02 RETURNED reg=00000200
+<5>T4_CLK gate=05 enable=0 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=00000200
+<5>T4_CLK KEEP_DISPLAY gate=0b request=OFF
+<5>T4_CLK gate=14 enable=1 BEGIN
+<5>T4_CLK gate=14 RETURNED reg=000002ff
+<5>T4_CLK gate=02 enable=1 BEGIN
+<5>T4_CLK gate=02 RETURNED reg=000002ff
+<5>T4_CLK gate=05 enable=1 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=000002ff
+<5>T4_CLK gate=0b enable=1 BEGIN
+<5>T4_CLK gate=0b RETURNED reg=000002ff
+<5>T4_CLK gate=1f enable=1 BEGIN
+<5>T4_CLK gate=1f RETURNED reg=000002ff
+<5>T4_CLK gate=2b enable=1 BEGIN
+<5>T4_CLK gate=2b RETURNED reg=000002ff
+<5>T4_CLK gate=2c enable=1 BEGIN
+<5>T4_CLK gate=2c RETURNED reg=000002ff
+<5>T4_CLK gate=2d enable=1 BEGIN
+<5>T4_CLK gate=2d RETURNED reg=000002ff
+<5>T4_CLK gate=2e enable=1 BEGIN
+<5>T4_CLK gate=2e RETURNED reg=000002ff
+<5>T4_CLK gate=2f enable=1 BEGIN
+<5>T4_CLK gate=2f RETURNED reg=000002ff
+<5>T4_CLK gate=39 enable=1 BEGIN
+<5>T4_CLK gate=39 RETURNED reg=000002ff
+<5>T4_CLK gate=3a enable=1 BEGIN
+<5>T4_CLK gate=3a RETURNED reg=000002ff
+<5>T4_CLK gate=3b enable=1 BEGIN
+<5>T4_CLK gate=3b RETURNED reg=000002ff
+<5>T4_CLK gate=1a enable=0 BEGIN
+<5>T4_CLK gate=1a RETURNED reg=00000200
+<5>T4_CLK gate=1d enable=0 BEGIN
+<5>T4_CLK gate=1d RETURNED reg=00000200
+<5>T4_CLK gate=15 enable=0 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=00000200
+<5>T4_CLK gate=18 enable=0 BEGIN
+<5>T4_CLK gate=18 RETURNED reg=00000200
+<5>T4_CLK gate=15 enable=0 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=00000200
+<5>T4_CLK gate=19 enable=0 BEGIN
+<5>T4_CLK gate=19 RETURNED reg=00000200
+<5>T4_CLK gate=15 enable=0 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=00000200
+<5>T4_CLK gate=1b enable=0 BEGIN
+<5>T4_CLK gate=1b RETURNED reg=00000200
+<5>T4_CLK gate=15 enable=0 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=00000200
+<5>T4_CLK gate=1c enable=0 BEGIN
+<5>T4_CLK gate=1c RETURNED reg=00000200
+<5>T4_CLK gate=24 enable=0 BEGIN
+<5>T4_CLK gate=24 RETURNED reg=00000200
+<5>T4_CLK gate=26 enable=0 BEGIN
+<5>T4_CLK gate=26 RETURNED reg=00000200
+<5>T4_CLK gate=25 enable=0 BEGIN
+<5>T4_CLK gate=25 RETURNED reg=00000200
+<5>T4_CLK gate=31 enable=0 BEGIN
+<5>T4_CLK gate=31 RETURNED reg=00000200
+<5>T4_CLK gate=32 enable=0 BEGIN
+<5>T4_CLK gate=32 RETURNED reg=00000200
+<5>T4_CLK gate=33 enable=0 BEGIN
+<5>T4_CLK gate=33 RETURNED reg=00000200
+<5>T4_CLK gate=34 enable=0 BEGIN
+<5>T4_CLK gate=34 RETURNED reg=00000200
+<5>T4_CLK gate=35 enable=0 BEGIN
+<5>T4_CLK gate=35 RETURNED reg=00000200
+<5>T4_CLK gate=36 enable=0 BEGIN
+<5>T4_CLK gate=36 RETURNED reg=00000200
+<5>T4_CLK gate=27 enable=0 BEGIN
+<5>T4_CLK gate=27 RETURNED reg=00000200
+<5>T4_CLK gate=28 enable=0 BEGIN
+<5>T4_CLK gate=28 RETURNED reg=00000200
+<5>T4_CLK gate=29 enable=0 BEGIN
+<5>T4_CLK gate=29 RETURNED reg=00000200
+<5>T4_CLK gate=2a enable=0 BEGIN
+<5>T4_CLK gate=2a RETURNED reg=00000200
+<5>T4_CLK gate=21 enable=0 BEGIN
+<5>T4_CLK gate=21 RETURNED reg=00000200
+<5>T4_CLK gate=22 enable=0 BEGIN
+<5>T4_CLK gate=22 RETURNED reg=00000200
+<5>T4_CLK gate=23 enable=0 BEGIN
+<5>T4_CLK gate=23 RETURNED reg=00000200
+<5>T4_CLK gate=20 enable=0 BEGIN
+<5>T4_CLK gate=20 RETURNED reg=00000200
+<5>T4_CLK gate=38 enable=0 BEGIN
+<5>T4_CLK gate=38 RETURNED reg=00000200
+<5>T4_CLK gate=3c enable=0 BEGIN
+<5>T4_CLK gate=3c RETURNED reg=00000200
+<5>T4_CLK gate=3e enable=0 BEGIN
+<5>T4_CLK gate=3e RETURNED reg=00000200
+<5>T4_CLK gate=15 enable=0 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=00000200
+<5>T4_CLK gate=16 enable=0 BEGIN
+<5>T4_CLK gate=16 RETURNED reg=00000200
+<5>T4_CLK gate=02 enable=0 BEGIN
+<5>T4_CLK gate=02 RETURNED reg=00000200
+<5>T4_CLK gate=03 enable=0 BEGIN
+<5>T4_CLK gate=03 RETURNED reg=00000200
+<5>T4_CLK gate=02 enable=0 BEGIN
+<5>T4_CLK gate=02 RETURNED reg=00000200
+<5>T4_CLK gate=04 enable=0 BEGIN
+<5>T4_CLK gate=04 RETURNED reg=00000000
+<5>T4_CLK gate=05 enable=0 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=00000200
+<5>T4_CLK gate=06 enable=0 BEGIN
+<5>T4_CLK gate=06 RETURNED reg=00000200
+<5>T4_CLK gate=05 enable=0 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=00000200
+<5>T4_CLK gate=07 enable=0 BEGIN
+<5>T4_CLK gate=07 RETURNED reg=00000200
+<5>T4_CLK gate=05 enable=0 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=00000200
+<5>T4_CLK gate=08 enable=0 BEGIN
+<5>T4_CLK gate=08 RETURNED reg=00000200
+<5>T4_CLK gate=05 enable=0 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=00000200
+<5>T4_CLK gate=09 enable=0 BEGIN
+<5>T4_CLK gate=09 RETURNED reg=00000200
+<5>T4_CLK gate=05 enable=0 BEGIN
+<5>T4_CLK gate=05 RETURNED reg=00000200
+<5>T4_CLK gate=0a enable=0 BEGIN
+<5>T4_CLK gate=0a RETURNED reg=00000200
+<5>T4_CLK gate=13 enable=0 BEGIN
+<5>T4_CLK gate=13 RETURNED reg=00000200
+<5>T4_CLK gate=0d enable=0 BEGIN
+<5>T4_CLK gate=0d RETURNED reg=00000200
+<5>T4_CLK gate=10 enable=0 BEGIN
+<5>T4_CLK gate=10 RETURNED reg=00000200
+<5>T4_CLK gate=0c enable=0 BEGIN
+<5>T4_CLK gate=0c RETURNED reg=00000200
+<5>T4_CLK KEEP_DISPLAY gate=0b request=OFF
+<5>T4_CLK gate=0e enable=0 BEGIN
+<5>T4_CLK gate=0e RETURNED reg=00000200
+<7>On node 0 totalpages: 65536
+<7>free_area_init_node: node 0, pgdat c028d330, node_mem_map c03cb000
+<7>  Normal zone: 512 pages used for memmap
+<7>  Normal zone: 0 pages reserved
+<7>  Normal zone: 65024 pages, LIFO batch:15
+<7>pcpu-alloc: s0 r0 d32768 u32768 alloc=1*32768
+<7>pcpu-alloc: [0] 0 
+<4>Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
+<5>Kernel command line: console=t4fb0 loglevel=8 ignore_loglevel rdinit=/init panic=0 t4fb=0x0F700000 t4_test=T4_ANDROID_TOUCH_03 slub_debug=FZPU noalign
+<6>PID hash table entries: 1024 (order: 0, 4096 bytes)
+<6>Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+<6>Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+<6>Memory: 256MB = 256MB total
+<5>Memory: 208116k/208116k available, 54028k reserved, 0K highmem
+<5>Virtual kernel memory layout:
+<5>    vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+<5>    fixmap  : 0xfff00000 - 0xfffe0000   ( 896 kB)
+<5>    DMA     : 0xffa00000 - 0xffe00000   (   4 MB)
+<5>    vmalloc : 0xd0800000 - 0xf6000000   ( 600 MB)
+<5>    lowmem  : 0xc0000000 - 0xd0000000   ( 256 MB)
+<5>    modules : 0xbf000000 - 0xc0000000   (  16 MB)
+<5>      .init : 0xc0008000 - 0xc0025000   ( 116 kB)
+<5>      .text : 0xc0025000 - 0xc026ac3c   (2328 kB)
+<5>      .data : 0xc026c000 - 0xc028d9c0   ( 135 kB)
+<5>       .bss : 0xc028d9c0 - 0xc03ca020   (1266 kB)
+<6>SLUB: Genslabs=13, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+<6>NR_IRQS:404
+<4>s5l8930_init_irq
+<6>VIC @fc000000: id 0x00041192, vendor 0x41
+<6>VIC @fc010000: id 0x00041192, vendor 0x41
+<6>VIC @fc020000: id 0x00041192, vendor 0x41
+<6>VIC @fc030000: id 0x00041192, vendor 0x41
+<4>s5l8930_init_irq done
+<4>s5l8930-timer: initializing
+<4>s5l8930-timer: finished initialization: (cycles * 699050667) >> 24 = ns and (cycles << 32) / 103079215 = ns
+<6>Console: colour dummy device 80x30
+<7>ODEBUG: 1 of 1 active objects replaced
+<6>Calibrating delay loop... 12.95 BogoMIPS (lpj=64768)
+<6>pid_max: default: 32768 minimum: 301
+<6>Mount-cache hash table entries: 512
+<6>Initializing cgroup subsys cpuacct
+<6>CPU: Testing write buffer coherency: ok
+<6>NET: Registered protocol family 16
+<4>s5l8930_init
+<5>T4_CLK gate=14 enable=1 BEGIN
+<5>T4_CLK gate=14 RETURNED reg=000002ff
+<6>apple-cdma apple-cdma: enabling clock.
+<6>apple-cdma apple-cdma: driver started.
+<6>bio: create slab <bio-0> at 0
+<6>Switching to clocksource s5l8930-clock
+<6>NET: Registered protocol family 2
+<6>IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
+<6>TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+<6>TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
+<6>TCP: Hash tables configured (established 8192 bind 8192)
+<6>TCP reno registered
+<6>UDP hash table entries: 256 (order: 0, 4096 bytes)
+<6>UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)
+<6>NET: Registered protocol family 1
+<6>Trying to unpack rootfs image as initramfs...
+<6>Freeing initrd memory: 45416K
+<6>ashmem: initialized
+<6>msgmni has been set to 495
+<6>io scheduler noop registered
+<6>io scheduler deadline registered
+<6>io scheduler cfq registered (default)
+<6>registered panel driver(s5l-clcd) to mipi-dsi driver.
+<6>s5l8900-uart.0: s3c2410_serial0 at MMIO 0x82500000 (irq = 320) is a S3C6400/10
+<5>T4_CLK gate=30 enable=1 BEGIN
+<5>T4_CLK gate=30 RETURNED reg=000002ff
+<5>T4_CLK gate=30 enable=0 BEGIN
+<5>T4_CLK gate=30 RETURNED reg=00000200
+<6>s5l8900-uart.1: s3c2410_serial1 at MMIO 0x82600000 (irq = 324) is a S3C6400/10
+<5>T4_CLK gate=31 enable=1 BEGIN
+<5>T4_CLK gate=31 RETURNED reg=000002ff
+<5>T4_CLK gate=31 enable=0 BEGIN
+<5>T4_CLK gate=31 RETURNED reg=00000200
+<6>s5l8900-uart.2: s3c2410_serial2 at MMIO 0x82700000 (irq = 328) is a S3C6400/10
+<5>T4_CLK gate=32 enable=1 BEGIN
+<5>T4_CLK gate=32 RETURNED reg=000002ff
+<5>T4_CLK gate=32 enable=0 BEGIN
+<5>T4_CLK gate=32 RETURNED reg=00000200
+<6>s5l8900-uart.3: s3c2410_serial3 at MMIO 0x82800000 (irq = 332) is a S3C6400/10
+<5>T4_CLK gate=33 enable=1 BEGIN
+<5>T4_CLK gate=33 RETURNED reg=000002ff
+<5>T4_CLK gate=33 enable=0 BEGIN
+<5>T4_CLK gate=33 RETURNED reg=00000200
+<6>brd: module loaded
+<5>T4_USB stage=1
+<5>T4_CLK gate=15 enable=1 BEGIN
+<5>T4_CLK gate=15 RETURNED reg=000002ff
+<5>T4_CLK gate=1d enable=1 BEGIN
+<5>T4_CLK gate=1d RETURNED reg=000002ff
+<5>T4_CLK gate=18 enable=1 BEGIN
+<5>T4_CLK gate=18 RETURNED reg=000002ff
+<5>T4_USB stage=2
+<6>s3c-hsotg s3c-hsotg: USB_LNX_01 clock on gate18=000002ff gate1d=000002ff ref=24000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_02 PHY power=00000006
+<6>s3c-hsotg s3c-hsotg: USB_LNX_03 PHY reset done CLK=00000001 RST=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_ID GSNPSID=4f54272a HWCFG=00000264/228f60d0/07e800e8/dbf08030
+<5>T4_USB stage=3
+<5>T4_USB stage=4
+<6>s3c-hsotg s3c-hsotg: USB_LNX_04_CORE_RESET gate18=000002ff gate1d=000002ff PHY=00000006 CLK=00000001 RST=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_REG ID=4f54272a PCGC=00000000 RST=80000000 USB=00001408 AHB=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_INT STS=5400bc38 MSK=00000000 OTG=000d0000 DCTL=00000000
+<6>s3c-hsotg s3c-hsotg: dedicated fifos
+<6>s3c-hsotg s3c-hsotg: USB_LNX_05 EP_READY ctrl_req=cb8f5000 irq=13
+<3>s3c-hsotg s3c-hsotg: cannot create debug root
+<5>T4_USB stage=10
+<6>s3c-hsotg s3c-hsotg: USB_LNX_06_PROBE_OK gate18=000002ff gate1d=000002ff PHY=00000006 CLK=00000001 RST=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_REG ID=4f54272a PCGC=00000000 RST=80000400 USB=0000140f AHB=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_INT STS=04000030 MSK=00000000 OTG=000d0000 DCTL=00000002
+<6>android_usb gadget: android_usb ready
+<6>s3c-hsotg s3c-hsotg: USB_LNX_07_EP0_READY gate18=000002ff gate1d=000002ff PHY=00000006 CLK=00000001 RST=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_REG ID=4f54272a PCGC=00000000 RST=80000400 USB=0000140f AHB=00000001
+<6>s3c-hsotg s3c-hsotg: USB_LNX_INT STS=04000020 MSK=f00c3cd4 OTG=000d0000 DCTL=00000002
+<6>s3c-hsotg s3c-hsotg: USB_ADB_WAIT_ENABLE: EP0 ready; userspace owns connect
+<6>s3c-hsotg s3c-hsotg: USB_LNX_08_BIND_COMPLETE gate18=000002ff gate1d=000002ff PHY=00000006 CLK=00000001 RST=00000000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_REG ID=4f54272a PCGC=00000000 RST=80000400 USB=0000140f AHB=00000001
+<6>s3c-hsotg s3c-hsotg: USB_LNX_INT STS=04000020 MSK=f00c3cd4 OTG=000d0000 DCTL=00000002
+<6>s3c-hsotg s3c-hsotg: bound driver android_usb
+<5>T4_USB stage=20
+<6>mousedev: PS/2 mouse device common for all mice
+<6>logger: created 256K log 'log_main'
+<6>logger: created 256K log 'log_events'
+<6>logger: created 256K log 'log_radio'
+<6>logger: created 256K log 'log_system'
+<6>TCP cubic registered
+<6>NET: Registered protocol family 10
+<6>IPv6 over IPv4 tunneling driver
+<6>VFP support v0.3: implementor 41 architecture 3 part 30 variant c rev 2
+<5>T4_FB_READY fb0 640x960 RGBX8888/RGB565 shadow=0b400000 inherited=0f700000; no display MMIO
+<6>input: t4-ram-keys as /devices/virtual/input/input0
+<5>T4_INPUT_READY: t4-ram-keys; read-only GPIO polling; initial=0; touch not registered
+<4>Warning: unable to open an initial console.
+<6>Freeing init memory: 116K
+<5>T4_ANDROID_BOOTSTRAP_EXEC: androidi4 original init next; not yet Android success
+<5>T4_ANDROID_RAM_PREPARED: original busybox, RAM /dev only
+<3>init: Timed out waiting for /dev/.coldboot_done
+<6>init: command 'loglevel' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'export' r=0
+<6>init: command 'symlink' r=0
+<6>init: command 'symlink' r=0
+<6>init: command 'symlink' r=0
+<6>init: command 'symlink' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mount' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mount' r=0
+<6>init: command 'chown' r=0
+<6>init: command 'chmod' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'chown' r=0
+<6>init: command 'chmod' r=0
+<6>init: command 'write' r=0
+<6>init: command 'write' r=-2
+<6>init: command 'write' r=0
+<4>android-init (1): /proc/1/oom_adj is deprecated, please use /proc/1/oom_score_adj instead.
+<6>init: command 'write' r=0
+<6>init: command 'write' r=0
+<6>init: command 'setrlimit' r=0
+<6>init: processing action 0x25dc8 (fs)
+<6>init: command 'mount' r=0
+<6>init: command 'mount' r=0
+<6>init: processing action 0x25e58 (post-fs)
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: command 'mkdir' r=0
+<6>init: processing action 0x27618 (property_service_init)
+<6>init: Created socket '/dev/socket/property_service' with mode '666', user '0', group '0'
+<6>init: command 'property_service_init' r=0
+<6>init: processing action 0x27660 (signal_init)
+<6>init: command 'signal_init' r=0
+<6>init: processing action 0x276a8 (check_startup)
+<6>init: command 'check_startup' r=0
+<6>init: processing action 0x261e8 (boot)
+<6>init: command 'ifup' r=0
+<5>init: starting 't4-usb-setup'
+<6>init: command 'start' r=0
+<5>init: starting 't4-touch'
+<3>android_usb: already disabled
+<6>init: command 'start' r=0
+<4>T4_TOUCH sched_FIFO_result=00000000
+<4>T4_TOUCH_INPUT_02: real N1 SPI -> Linux uinput; FIFO50; RAM only
+<4>T4_TOUCH SPI1_GATE=000002ff
+<4>T4_TOUCH SPI1_CTRL=00000000
+<4>T4_TOUCH SPI1_CFG=00000008
+<6>init: command 'hostname' r=0
+<4>T4_TOUCH SPI1_STATUS=00000000
+<4>T4_TOUCH RESET_204=00000212
+<4>T4_TOUCH IRQ_205=00000290
+<4>T4_TOUCH CS_601=00000212
+<4>T4_TOUCH SPI_SETUP_saved=00000000
+<4>T4_TOUCH SPI_SETUP_readback=000001f4
+<4>T4_TOUCH PMU_GPIO0_SAVED=00000013
+<6>adb_bind_config
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=04000820 mask=f00c3cd4 active=00000800
+<6>s3c-hsotg s3c-hsotg: S3C_GINTSTS_USBSusp
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=0400b438 mask=f00c3cd4 active=00003410
+<6>s3c-hsotg s3c-hsotg: new device is high-speed
+<6>s3c-hsotg s3c-hsotg: s3c_hsotg_irq: USBRst
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=04008038 mask=f00c3cd4 active=00000010
+<4>------------[ cut here ]------------
+<4>WARNING: at drivers/usb/gadget/s3c-hsotg.c:1437 s3c_hsotg_rx_data+0xa0/0x100()
+<4>[<c002edf8>] (unwind_backtrace+0x0/0xe0) from [<c003cc30>] (warn_slowpath_common+0x48/0x60)
+<4>[<c003cc30>] (warn_slowpath_common+0x48/0x60) from [<c003cd04>] (warn_slowpath_null+0x18/0x20)
+<4>[<c003cd04>] (warn_slowpath_null+0x18/0x20) from [<c013c454>] (s3c_hsotg_rx_data+0xa0/0x100)
+<4>[<c013c454>] (s3c_hsotg_rx_data+0xa0/0x100) from [<c013d30c>] (s3c_hsotg_irq+0x554/0x700)
+<4>[<c013d30c>] (s3c_hsotg_irq+0x554/0x700) from [<c00664c8>] (handle_irq_event_percpu+0x2c/0x16c)
+<4>[<c00664c8>] (handle_irq_event_percpu+0x2c/0x16c) from [<c0066630>] (handle_irq_event+0x28/0x38)
+<4>[<c0066630>] (handle_irq_event+0x28/0x38) from [<c0067f80>] (handle_level_irq+0xb4/0xdc)
+<4>[<c0067f80>] (handle_level_irq+0xb4/0xdc) from [<c006602c>] (generic_handle_irq+0x20/0x30)
+<4>[<c006602c>] (generic_handle_irq+0x20/0x30) from [<c0025060>] (asm_do_IRQ+0x60/0x80)
+<4>[<c0025060>] (asm_do_IRQ+0x60/0x80) from [<c0029db4>] (__irq_svc+0x34/0xa0)
+<4>Exception stack(0xcb96fec0 to 0xcb96ff08)
+<4>fec0: 00000000 ffffffff 00000040 000d0000 d0820000 cb8f5180 00000000 00000002
+<4>fee0: cb8d9d08 cb8f6240 c0208cf0 00000000 c0033d18 cb96ff08 c0033d44 c0033d4c
+<4>ff00: 60000013 ffffffff
+<4>[<c0029db4>] (__irq_svc+0x34/0xa0) from [<c0033d4c>] (a4_usb_pullup+0x34/0x60)
+<4>[<c0033d4c>] (a4_usb_pullup+0x34/0x60) from [<c013c4dc>] (s3c_hsotg_pullup+0x28/0x54)
+<4>[<c013c4dc>] (s3c_hsotg_pullup+0x28/0x54) from [<c0141f20>] (enable_store+0xbc/0x160)
+<4>[<c0141f20>] (enable_store+0xbc/0x160) from [<c012f870>] (dev_attr_store+0x18/0x24)
+<4>[<c012f870>] (dev_attr_store+0x18/0x24) from [<c00d36a4>] (sysfs_write_file+0x104/0x148)
+<4>[<c00d36a4>] (sysfs_write_file+0x104/0x148) from [<c0093a44>] (vfs_write+0xa8/0x138)
+<4>[<c0093a44>] (vfs_write+0xa8/0x138) from [<c0093b70>] (sys_write+0x34/0x68)
+<4>[<c0093b70>] (sys_write+0x34/0x68) from [<c002a240>] (ret_fast_syscall+0x0/0x30)
+<4>---[ end trace 8c4d2cb00a7dc576 ]---
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=0400b438 mask=f00c3cd4 active=00003410
+<6>s3c-hsotg s3c-hsotg: new device is high-speed
+<6>s3c-hsotg s3c-hsotg: s3c_hsotg_irq: USBRst
+<4>s3c-hsotg s3c-hsotg: s3c_hsotg_handle_rx: unknown status 00400000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=04008038 mask=f00c3cd4 active=00000010
+<4>s3c-hsotg s3c-hsotg: s3c_hsotg_handle_rx: unknown status 00400000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=04008038 mask=f00c3cd4 active=00000010
+<4>s3c-hsotg s3c-hsotg: s3c_hsotg_handle_rx: unknown status 00400000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=04008038 mask=f00c3cd4 active=00000010
+<4>s3c-hsotg s3c-hsotg: s3c_hsotg_handle_rx: unknown status 00400000
+<6>s3c-hsotg s3c-hsotg: USB_LNX_IRQ sts=04008038 mask=f00c3cd4 active=00000010
+<4>s3c-hsotg s3c-hsotg: s3c_hsotg_handle_rx: unknown status 00400000
+<4>s3c-hsotg s3c-hsotg: s3c_hsotg_handle_rx: unknown status 00400000
+<6>init: command 'setprop' r=0
+<6>s3c-hsotg s3c-hsotg: s3c_hsotg_irq: USBRst
+<6>s3c-hsotg s3c-hsotg: new device is high-speed
+<6>s3c-hsotg s3c-hsotg: S3C_GINTSTS_USBSusp
+<1>Unable to handle kernel paging request at virtual address 01000690
+<1>pgd = cb92c000
+<1>[01000690] *pgd=00000000
+<0>T4_FIRST_FATAL Oops error=00000005 - STOP
+<0>T4_FIRST_FATAL PC=c013e0f4 LR=c013e07c CPSR=60000193
+<0>T4_FIRST_FATAL DFSR=00000005 DFAR=01000690
+<4>CPU: 0    Tainted: G        W    (3.0.8 #25)
+<4>PC is at composite_suspend+0x88/0xa8
+<4>LR is at composite_suspend+0x10/0xa8
+<4>pc : [<c013e0f4>]    lr : [<c013e07c>]    psr: 60000193
+<4>sp : cb911e00  ip : c028dd4c  fp : cb98e180
+<4>r10: c02c61dc  r9 : cf0b5dc0  r8 : c0277f2c
+<4>r7 : 00000000  r6 : cf0b5e08  r5 : 00000009  r4 : cb8f5280
+<4>r3 : 01000680  r2 : 00000800  r1 : 00000000  r0 : cb8f5280
+<4>Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment user
+<4>Control: 00c50079  Table: 0b92c019  DAC: 00000015
+<4>
+<4>PC: 0xc013e074:
+<4>e074  e2800020 ebffd304 e590300c e1a04000 e3530000 15935024 1a00000d e59f3078
+<4>e094  e593333c e5933020 e3530000 0a00000f e1a00004 e12fff33 ea00000c e595302c
+<4>e0b4  e3530000 0a000001 e1a00005 e12fff33 e5955034 e594300c e2455034 e2852034
+<4>e0d4  e2833024 e1520003 1afffff3 eaffffea e5d43010 e3833001 e5c43010 e5963000
+<4>e0f4  e5933010 e3530000 08bd8070 e1a00006 e3a01002 e12fff33 e8bd8070 c02c6204
+<4>e114  e92d4070 e1a06000 e2800020 ebffd2da e59f3090 e593333c e5933024 e3530000
+<4>e134  e1a05000 0a000000 e12fff33 e595300c e3530000 0a000017 e5934024 e595300c
+<4>e154  e2444034 e2841034 e2832024 e1510002 0a000006 e5943030 e3530000 0a000001
+<4>
+<4>LR: 0xc013dffc:
+<4>dffc  e59f300c e1a00002 e59f1008 e5d32004 eaff0507 c0287a70 c0253000 e59f300c
+<4>e01c  e1a00002 e59f1008 e1d320bc eaff0500 c0287a70 c023abe2 e59f300c e1a00002
+<4>e03c  e59f1008 e1d320ba eaff04f9 c0287a70 c023abe2 e59f300c e1a00002 e59f1008
+<4>e05c  e1d320b8 eaff04f2 c0287a70 c023abe2 e92d4070 e1a06000 e2800020 ebffd304
+<4>e07c  e590300c e1a04000 e3530000 15935024 1a00000d e59f3078 e593333c e5933020
+<4>e09c  e3530000 0a00000f e1a00004 e12fff33 ea00000c e595302c e3530000 0a000001
+<4>e0bc  e1a00005 e12fff33 e5955034 e594300c e2455034 e2852034 e2833024 e1520003
+<4>e0dc  1afffff3 eaffffea e5d43010 e3833001 e5c43010 e5963000 e5933010 e3530000
+<4>
+<4>SP: 0xcb911d80:
+<4>1d80  00000001 005b8d80 00000000 cf084f30 cb911db4 c0274fb8 c0246a72 cb911df8
+<4>1da0  00000000 ffffffff cb911dec cf0b5e08 00000000 c0029d6c cb8f5280 00000000
+<4>1dc0  00000800 01000680 cb8f5280 00000009 cf0b5e08 00000000 c0277f2c cf0b5dc0
+<4>1de0  c02c61dc cb98e180 c028dd4c cb911e00 c013e07c c013e0f4 60000193 ffffffff
+<4>1e00  00002c00 00000009 00000200 c013d394 c0277c8c c005bf0c 02870c6e 00000008
+<4>1e20  cb911e20 cb8f5080 0000000d 00000000 00000000 c0277f2c c02b3300 c02b3130
+<4>1e40  cb98e180 c00664c8 c0277f2c cb8f5080 c0277f2c c0283420 00000000 0000006b
+<4>1e60  0000006b c02b3300 c053e100 c0066630 c0277f2c c0067f80 0000000d c006602c
+<4>
+<4>IP: 0xc028dccc:
+<4>dccc  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>dcec  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>dd0c  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>dd2c  c0273be8 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>dd4c  0f700000 cf700000 00000000 00000020 00000077 00000000 00000000 cb918440
+<4>dd6c  cb400000 cf700000 cf038605 c028dd78 c028dd78 c0032e1c c02b00ec c02b00ec
+<4>dd8c  0000004c c02afe80 c004e620 c028dd74 ffffffff 00000000 00000000 00000000
+<4>ddac  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>
+<4>FP: 0xcb98e100:
+<4>e100  6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b
+<4>e120  6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b a56b6b6b
+<4>e140  bbbbbbbb cb98e180 00000000 00000000 00000000 00000000 00000000 00000000
+<4>e160  00000000 00000000 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a
+<4>e180  6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b
+<4>e1a0  6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b
+<4>e1c0  6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b
+<4>e1e0  6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b 6b6b6b6b
+<4>
+<4>R0: 0xcb8f5200:
+<4>5200  cb8f4180 cb8d9c78 cb8d9c78 cf02dc80 cb8d9c78 c02871d8 cb8f3c60 00000002
+<4>5220  00000003 cb8f5100 00000000 00000000 00000000 00000000 00000000 00000000
+<4>5240  cccccccc cb8f5280 c012fd24 00000000 00000001 ffffd46f 00000000 00000000
+<4>5260  00000000 00000000 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a
+<4>5280  cf0b5e08 cb8f5300 00000400 00000000 00011201 00000002 0118d140 01022600
+<4>52a0  00010302 c0287b1c c0287b1c c0287c20 00000003 00000000 00000000 00000000
+<4>52c0  cccccccc cb8f5300 c014204c 00000000 00000001 ffffd470 c00fa408 00000000
+<4>52e0  00000001 ffffd46f 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a
+<4>
+<4>R4: 0xcb8f5200:
+<4>5200  cb8f4180 cb8d9c78 cb8d9c78 cf02dc80 cb8d9c78 c02871d8 cb8f3c60 00000002
+<4>5220  00000003 cb8f5100 00000000 00000000 00000000 00000000 00000000 00000000
+<4>5240  cccccccc cb8f5280 c012fd24 00000000 00000001 ffffd46f 00000000 00000000
+<4>5260  00000000 00000000 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a
+<4>5280  cf0b5e08 cb8f5300 00000400 00000000 00011201 00000002 0118d140 01022600
+<4>52a0  00010302 c0287b1c c0287b1c c0287c20 00000003 00000000 00000000 00000000
+<4>52c0  cccccccc cb8f5300 c014204c 00000000 00000001 ffffd470 c00fa408 00000000
+<4>52e0  00000001 ffffd46f 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a
+<4>
+<4>R6: 0xcf0b5d88:
+<4>5d88  c012c044 00000000 00000001 ffffccf3 00000000 00000000 00000000 00000000
+<4>5da8  5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a c0274fb8 c0287b90
+<4>5dc8  c0275078 d0820000 cb8f1f00 0000000d c0272bb8 00000001 ffffffed 00000000
+<4>5de8  00000000 00000000 cb8f5000 00000000 00000000 010c0080 010c0080 000c0080
+<4>5e08  01000680 cf0b5ed0 cf0b5f28 cf0b613c 00000003 00000001 cf065a80 00000000
+<4>5e28  c0274fb8 cb8ea8c0 cb8f4000 cb8d9e0c cb8d9d0c c0274fc0 cf02d480 c02871b8
+<4>5e48  cb8f6300 00000002 00000003 00000000 00000000 00000001 cf0b5e60 cf0b5e60
+<4>5e68  00000000 c0287bac 00000000 00000000 00000000 00000000 c0275070 00000000
+<4>
+<4>R8: 0xc0277eac:
+<4>7eac  00000000 00000000 00000000 00000000 00000000 00000000 cf04e500 00000000
+<4>7ecc  0000000c 00000000 00010000 c0271ff0 00000000 fc000000 00000000 00000000
+<4>7eec  c05cd120 c0067ecc 00000000 00000000 00000000 00000001 00000000 00000000
+<4>7f0c  00000000 00000000 00000000 00000000 00000000 00000000 cf04e5a0 00000000
+<4>7f2c  0000000d 00000000 00060000 c0271ff0 00000000 fc000000 00000000 00000000
+<4>7f4c  c05cd124 c0067ecc cb8f5080 00000000 00000000 00000000 00000000 00000004
+<4>7f6c  00000000 00000000 00000000 00000000 c0277f7c c0277f7c cf04e640 00000000
+<4>7f8c  0000000e 00000000 00010000 c0271ff0 00000000 fc000000 00000000 00000000
+<4>
+<4>R9: 0xcf0b5d40:
+<4>5d40  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>5d60  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>5d80  cccccccc cf0b5dc0 c012c044 00000000 00000001 ffffccf3 00000000 00000000
+<4>5da0  00000000 00000000 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a 5a5a5a5a
+<4>5dc0  c0274fb8 c0287b90 c0275078 d0820000 cb8f1f00 0000000d c0272bb8 00000001
+<4>5de0  ffffffed 00000000 00000000 00000000 cb8f5000 00000000 00000000 010c0080
+<4>5e00  010c0080 000c0080 01000680 cf0b5ed0 cf0b5f28 cf0b613c 00000003 00000001
+<4>5e20  cf065a80 00000000 c0274fb8 cb8ea8c0 cb8f4000 cb8d9e0c cb8d9d0c c0274fc0
+<4>
+<4>R10: 0xc02c615c:
+<4>615c  91bbfc5c f6b7e431 528b3484 3d815952 91468759 af20f042 00000000 00000000
+<4>617c  00000000 cf075080 000007ff 00000000 00000000 00000000 cf02dc80 cf02d480
+<4>619c  cf02d600 00000000 00000000 cf02d500 cf02d580 cf02d900 cf02d680 00000000
+<4>61bc  cf02d700 00000000 cf02d780 00000000 00000000 00000000 00000000 cf0654e0
+<4>61dc  00000001 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>61fc  cf0b5dc0 0000000c cb8f5180 00000000 00000000 00000000 00000000 00000000
+<4>621c  00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+<4>623c  00000000 41523454 4244414d 42003130 46454443 00000000 00000000 00000000
+<0>T4_STACK:(0xcb911e00 to 0xcb911e80)
+<0>1e00: 00002c00 00000009 00000200 c013d394 c0277c8c c005bf0c 02870c6e 00000008
+<0>1e20: cb911e20 cb8f5080 0000000d 00000000 00000000 c0277f2c c02b3300 c02b3130
+<0>1e40: cb98e180 c00664c8 c0277f2c cb8f5080 c0277f2c c0283420 00000000 0000006b
+<0>1e60: 0000006b c02b3300 c053e100 c0066630 c0277f2c c0067f80 0000000d c006602c
+<4>[<c013e0f4>] (composite_suspend+0x88/0xa8) from [<c013d394>] (s3c_hsotg_irq+0x5dc/0x700)
+<4>[<c013d394>] (s3c_hsotg_irq+0x5dc/0x700) from [<c00664c8>] (handle_irq_event_percpu+0x2c/0x16c)
+<4>[<c00664c8>] (handle_irq_event_percpu+0x2c/0x16c) from [<c0066630>] (handle_irq_event+0x28/0x38)
+<4>[<c0066630>] (handle_irq_event+0x28/0x38) from [<c0067f80>] (handle_level_irq+0xb4/0xdc)
+<4>[<c0067f80>] (handle_level_irq+0xb4/0xdc) from [<c006602c>] (generic_handle_irq+0x20/0x30)
+<4>[<c006602c>] (generic_handle_irq+0x20/0x30) from [<c0025060>] (asm_do_IRQ+0x60/0x80)
+<4>[<c0025060>] (asm_do_IRQ+0x60/0x80) from [<c0029db4>] (__irq_svc+0x34/0xa0)
+<4>Exception stack(0xcb911e98 to 0xcb911ee0)
+<4>1e80:                                                       cb98ec68 c053e100
+<4>1ea0: 0000006b c02436da cb98ec67 cb98f17f cf003b40 0000006b 0000006b c02b3300
+<4>1ec0: c053e100 cb98e180 00000004 cb911ee0 c008fbb8 c008f9e8 60000013 ffffffff
+<4>[<c0029db4>] (__irq_svc+0x34/0xa0) from [<c008f9e8>] (check_bytes_and_report+0x24/0xd0)
+<4>[<c008f9e8>] (check_bytes_and_report+0x24/0xd0) from [<c008fbb8>] (check_object+0x124/0x214)
+<4>[<c008fbb8>] (check_object+0x124/0x214) from [<c008ff74>] (__free_slab+0x14c/0x168)
+<4>[<c008ff74>] (__free_slab+0x14c/0x168) from [<c0090788>] (kmem_cache_free+0xa4/0xac)
+<4>[<c0090788>] (kmem_cache_free+0xa4/0xac) from [<c0092ea4>] (do_sys_open+0x160/0x174)
+<4>[<c0092ea4>] (do_sys_open+0x160/0x174) from [<c002a240>] (ret_fast_syscall+0x0/0x30)
+<0>Code: e5d43010 e3833001 e5c43010 e5963000 (e5933010) 
+<0>T4_FIRST_FATAL_END - photograph registers and Call trace
