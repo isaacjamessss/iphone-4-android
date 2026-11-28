@@ -36,6 +36,7 @@ KIT = os.path.join(ROOT, "boot")   # replaced by set_profile()
 KERNEL_SRC = os.environ.get("T4_KERNEL", os.path.join(HERE, "t4-kernel.bin"))
 VMLINUX_SRC = os.environ.get("T4_VMLINUX", os.path.join(HERE, "t4-vmlinux.bin"))
 INITRD_SRC = os.environ.get("T4_INITRD", os.path.join(ROOT, "boot", "t4-initrd.bin"))
+# (LOWRES default initrd = boot/initrd-touch4-lowres.bin, set after QUIET/LOWRES below)
 OIBSEND = os.path.join(ROOT, "tools", "oibsend.py")
 
 FB, FBE = 0x0F700000, 0x0FA00000          # physical framebuffer (xRGB8888)
@@ -58,7 +59,7 @@ def set_profile(name):
         FB, FBE = 0x0F700000, 0x0FA00000
         VCB = 0xC0000000 + (CB - RAM_BASE)
         SCTLR_MINIMAL = False      # phone: was True (caches OFF -> Android ~10-30x slow); kernel mask OK since run7
-        KIT = os.path.join(ROOT, "boot")
+        KIT = os.path.join(ROOT, "boot", "lowres" if LOWRES else "quiet") if QUIET else os.path.join(ROOT, "boot")
     elif name == "qemu":
         # virt: RAM 0x40000000..0x50000000. zrel 0x40008000, PT at +16KB,
         # bss 0x4028D9C0..0x403CA020 -> blob at 0x41800000 (free, between
@@ -80,6 +81,18 @@ VB, VCB = 0xC0008000, 0xC0300000          # kernel VA base / blob VA base
 REC = 0x0F600000
 VREC = 0xC0000000 + REC
 ATAGS_PTR_VA = 0xC001D0F8                # __atags_pointer (from __mmap_switched pool)
+# QUIET=1: progress checkpoints skip the full-screen fill + busy-wait
+# (saves ~20 x fill+delay); error paints that end in a hang are kept.
+# Output goes to bootkit/quiet/ so the colour (debug) kit stays intact.
+QUIET = os.environ.get("QUIET", "") not in ("", "0")
+# LOWRES=1 (implies QUIET): t4fb becomes 320x480 RGB565 with 2 pages (page
+# flipping); a kernel-resident cave (tools/lowres-fb.S) 2x-scales a page to
+# the real 640x960 fb when Android flips, polled every jiffy instead of a
+# blind full copy every 10 jiffies. Output: bootkit/lowres/.
+LOWRES = os.environ.get("LOWRES", "") not in ("", "0")
+QUIET = QUIET or LOWRES
+if LOWRES and "T4_INITRD" not in os.environ:
+    INITRD_SRC = os.path.join(ROOT, "boot", "initrd-touch4-lowres.bin")
 MID_OFFS = set()                         # blob offsets of re-encoded VA bl words (audit skip)
 BASE = 0x44000000                         # zImage load PA
 PAGE_OFFSET = 0xC0000000
@@ -152,7 +165,9 @@ class Asm:
         self.ext[idx] = target
         self.ins.append(0xEB000000)      # keep BL opcode through finish()
 
-    def paint(self, scratch, color):
+    def paint(self, scratch, color, hang=False):
+        if QUIET and not hang:
+            return
         a, b, c = scratch
         self.nc += 1
         cn = "COL%d" % self.nc
@@ -193,7 +208,7 @@ class Asm:
 def cave(base, scratch, color, mid, ret, fb=None, fbe=None):
     """Standard paint+delay cave: ldr FB/FBE/COL, paint, mid..., b ret."""
     a = Asm(base)
-    a.paint(scratch, color)
+    a.paint(scratch, color, hang=(mid[-1:] == [0xEAFFFFFE]))
     for w in mid:
         a.emit(w)
     if ret is not None:
@@ -211,7 +226,7 @@ def build_blob():
         nonlocal off
         base = CB + off
         ins = fn(base)
-        if nwords is not None:
+        if nwords is not None and not QUIET:
             assert len(ins) == nwords, (len(ins), nwords)
         caves.append(ins)
         off += len(ins) * 4
@@ -314,7 +329,7 @@ def build_blob():
         for lbl, col in (("bad_id", 0x00FF0000), ("bad_kva", 0x00FFFF00),
                          ("bad_blob", 0x00FF8000), ("bad_vfb", 0x0080FF00),
                          ("bad_ifb", 0x00008080)):
-            a.label(lbl); a.paint((3, 5, 6), col); a.emit(0xEAFFFFFE)
+            a.label(lbl); a.paint((3, 5, 6), col, hang=True); a.emit(0xEAFFFFFE)
         return a.finish({"TTBR": _PT_TTBR,
                          "PT_ID0": _id0_slot, "PT_ID0X": _id0_exp,
                          "PT_KVA": _kva_slot, "PT_KVAX": _id0_exp,
@@ -457,7 +472,72 @@ def patch_vmlinux(offs):
     struct.pack_into("<I", v, COMPOSITE_SUSPEND, 0xE12FFF1E)        # bx lr
     struct.pack_into("<I", v, 0xFC, 0xD0000000)
     struct.pack_into("<I", v, 0x108, 0xD0000000)
+    if LOWRES:
+        lowres_patch(v)
+    elif QUIET:
+        # no debug overlay bar (drawn by the fb copy worker after each copy)
+        assert struct.unpack_from("<I", v, 0xC0032F08 - VB)[0] == 0xEB0001CC
+        struct.pack_into("<I", v, 0xC0032F08 - VB, 0xE1A00000)
     return v
+
+
+LOWRES_CAVE = 0xC00334C4        # overlay fns 0xC00334C4..0xC003374C (freed)
+LOWRES_CAVE_END = 0xC003374C
+
+def _assemble_lowres():
+    """Assemble tools/lowres-fb.S at LOWRES_CAVE; returns (bytes, symbols)."""
+    import tempfile
+    src = os.path.join(HERE, "lowres-fb.S")
+    with tempfile.TemporaryDirectory() as td:
+        o, e = os.path.join(td, "c.o"), os.path.join(td, "c.elf")
+        subprocess.run(["clang", "--target=armv7a-linux-gnueabi", "-mcpu=cortex-a8",
+                        "-marm", "-c", src, "-o", o], check=True)
+        subprocess.run(["ld.lld", "-Ttext=0x%X" % LOWRES_CAVE, "-e", "cave_probe",
+                        "--defsym=PROBE_RET=0xC000DBD8", "--defsym=COPY_RET=0xC0032F04",
+                        "--defsym=COPY_SKIP=0xC0032F50", "-o", e, o], check=True)
+        b = os.path.join(td, "c.bin")
+        subprocess.run(["llvm-objcopy", "-O", "binary", "-j", ".text", e, b], check=True)
+        blob = open(b, "rb").read()
+        nm = subprocess.run(["llvm-nm", e], check=True, capture_output=True, text=True).stdout
+    syms = {}
+    for line in nm.splitlines():
+        a, _t, n = line.split()
+        syms[n] = int(a, 16)
+    assert syms["cave_probe"] == LOWRES_CAVE
+    assert LOWRES_CAVE + len(blob) <= LOWRES_CAVE_END, "lowres cave too big: %d" % len(blob)
+    return blob, syms
+
+
+def lowres_patch(v):
+    blob, sy = _assemble_lowres()
+    def put(va, old, new):
+        o = va - VB
+        cur = struct.unpack_from("<I", v, o)[0]
+        assert cur == old, "lowres: %08x is %08x, expected %08x" % (va, cur, old)
+        struct.pack_into("<I", v, o, new)
+    put(0xC000DBB8, 0xE3A03D0A, B(0xC000DBB8, sy["cave_probe"]))  # probe var setup
+    put(0xC00330AC, 0xE3530D0A, 0xE3530D05)   # check_var xres 640 -> 320
+    put(0xC00330B8, 0xE3530D0F, 0xE3530E1E)   # check_var yres 960 -> 480
+    put(0xC00330C4, 0xE3530D0A, 0xE3530D05)   # check_var xres_virtual 640 -> 320
+    #   0xC00330D0 yres_virtual stays 960 (= 2 pages)
+    put(0xC00330E8, 0xE3530000, 0xE3D33E1E)   # yoffset: cmp #0 -> bics #0x1E0 (0..480)
+    put(0xC0032FEC, 0xE3A02D0A, 0xE3A02D05)   # set_par line_length = 320*bpp/8
+    put(0xC0032DBC, 0xE5903010, B(0xC0032DBC, sy["cave_pan"]))    # fb_pan_display
+    put(0xC0032EB8, 0xE5932008, B(0xC0032EB8, sy["cave_copy"]))   # worker copy
+    put(0xC0032F08, 0xEB0001CC, 0xE1A00000)   # overlay call -> nop (its code is gone)
+    put(0xC0032F5C, 0xE3A0100A, 0xE3A01001)   # reschedule 10 -> 1 jiffy
+    o = LOWRES_CAVE - VB
+    v[o:o + len(blob)] = blob
+    exits = set()
+    for k in range(0, len(blob), 4):
+        w = struct.unpack_from("<I", blob, k)[0]
+        if (w >> 25) & 7 == 5 and (w >> 28) != 0xF:
+            t = brtarget(w, LOWRES_CAVE + k)
+            if not LOWRES_CAVE <= t < LOWRES_CAVE + len(blob):
+                exits.add(t)
+    assert exits == {0xC000DBD8, 0xC0032F04, 0xC0032F50}, [hex(x) for x in exits]
+    print("lowres: cave %d bytes @%08x (probe %08x pan %08x copy %08x data %08x)" %
+          (len(blob), LOWRES_CAVE, sy["cave_probe"], sy["cave_pan"], sy["cave_copy"], sy["fbdata"]))
 
 
 # ----------------------------------------------------------------------------
@@ -556,7 +636,7 @@ def build_zimage(patched_v):
     a.ldr(0, "K8000"); a.emit(0xE1540000); a.br(0x1A, "h_green")
     a.emit(0xE3A00000); a.emit(0xE1A01007); a.emit(0xE1A02008); a.emit(0xE1A0F004)
     for lbl, col in (("h_yellow", 0x00FFFF00), ("h_green", 0x0000FF00)):
-        a.label(lbl); a.paint((0, 1, 2), col); a.emit(0xEAFFFFFE)
+        a.label(lbl); a.paint((0, 1, 2), col, hang=True); a.emit(0xEAFFFFFE)
     b3 = a.finish({"K8000": KB, "ENTRY": e["ENTRY"]}, FB, FBE)
 
     CE = C3 + len(b3) * 4
@@ -639,6 +719,8 @@ def audit(zimg, blob, offs):
                     ("v2", (0, 5, 6)), ("v3", (0, 5, 6)),
                     ("m0", (3, 5, 6)), ("m0c", (3, 5, 6)), ("m0b", (3, 5, 6)),
                     ("m1", (4, 5, 6)), ("m2", (4, 5, 6))):
+        if QUIET and nm != "cD":
+            continue
         o = offs[nm] - CB
         first = struct.unpack_from("<I", blob, o)[0]
         want = 0xE59F0000 | (scr[0] << 12)
@@ -660,7 +742,7 @@ def audit(zimg, blob, offs):
             chk((CB <= t < CB + len(blob)) or (KB <= t < KB + 0x290000)
                 or (VB <= t < VB + 0x290000) or t == KB + 0x8124,
                 "blob branch @%x -> %x" % (o, t))
-    if md is not None:
+    if md is not None and not QUIET:
         # m0b/m1/m2 paint literals must be PHYSICAL FB (identity-mapped now)
         # literal block layout at cave end: COL, FB, FBE (Asm.finish order)
         for nm, nwords in (("m0b", 16), ("m1", 14), ("m2", 13)):
@@ -766,8 +848,13 @@ def main():
     if profile == "qemu":
         build_qemu_stub()
     else:
+        env = dict(os.environ)
+        if LOWRES:
+            env["T4_INITRD"] = INITRD_SRC     # stub ATAGs must match this initrd's size
+        if QUIET:
+            env["QUIET"] = "1"                # stub: no paint/delay either
         subprocess.run([sys.executable, os.path.join(HERE, "build-t4stub.py"),
-                        os.path.join(KIT, "stub.bin")], check=True)
+                        os.path.join(KIT, "stub.bin")], check=True, env=env)
 
     if profile == "qemu":
         sh = """#!/usr/bin/env bash

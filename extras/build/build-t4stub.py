@@ -13,6 +13,7 @@ Status colors at the framebuffer (physical 0x0F700000 per UI0 register):
 
 Usage: build-t4stub.py [out.bin]
 """
+import os
 import struct
 import sys
 
@@ -22,8 +23,16 @@ KERNEL = 0x44000000              # jump target = the zImage entry
 KERNEL_LEN = 0x1493BC
 KERNEL_MAGIC = 0xE51FF004
 INITRD = 0x09000000
-INITRD_SIZE = 0x02C5AD75
-RD_KB = 0x14481
+INITRD_SIZE = 0x02C5AD75        # stock t4-initrd.bin (gzip) length
+RD_KB = 0x14481                 # its uncompressed size in KB
+# T4_INITRD=/path/to/initrd.bin builds the ATAGs for a different initrd
+# (the kernel reads exactly INITRD_SIZE bytes - a wrong size = truncated
+# initramfs = "RAMDISK: EOF while reading compressed data" panic).
+if os.environ.get("T4_INITRD"):
+    import gzip as _gz
+    _d = open(os.environ["T4_INITRD"], "rb").read()
+    INITRD_SIZE = len(_d)
+    RD_KB = (len(_gz.decompress(_d)) + 1023) // 1024
 MACHINE = 3564
 FB = 0x0F700000
 FB_FILL_END = 0x0FA00000
@@ -96,6 +105,12 @@ def build():
     ins += [0xE3A00000, L(1, 12, base + 4), 0xE3A02C01,   # r0=0, r1=mach, r2=0x100
             L(15, 13, base + 12)]                          # ldr pc, =kernel
     assert len(ins) == NINS, len(ins)
+    if os.environ.get("QUIET", "") not in ("", "0"):
+        # NOP the magenta paint (0x00-0x14) and green paint + delay
+        # (0x64-0x84); red "kernel missing" + hang stays. Layout unchanged.
+        NOP = 0xE1A00000
+        for i in list(range(0x00 // 4, 0x18 // 4)) + list(range(0x64 // 4, 0x88 // 4)):
+            ins[i] = NOP
     stub = w(*ins) + w(*values) + atags
     return stub
 
