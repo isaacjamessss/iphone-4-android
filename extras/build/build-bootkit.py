@@ -36,7 +36,7 @@ KIT = os.path.join(ROOT, "boot")   # replaced by set_profile()
 KERNEL_SRC = os.environ.get("T4_KERNEL", os.path.join(HERE, "t4-kernel.bin"))
 VMLINUX_SRC = os.environ.get("T4_VMLINUX", os.path.join(HERE, "t4-vmlinux.bin"))
 INITRD_SRC = os.environ.get("T4_INITRD", os.path.join(ROOT, "boot", "t4-initrd.bin"))
-# (LOWRES default initrd = boot/initrd-touch4-lowres.bin, set after QUIET/LOWRES below)
+# (LOWRES default initrd = boot/initrd-touch5-lowres.bin, set after QUIET/LOWRES below)
 OIBSEND = os.path.join(ROOT, "tools", "oibsend.py")
 
 FB, FBE = 0x0F700000, 0x0FA00000          # physical framebuffer (xRGB8888)
@@ -92,7 +92,7 @@ QUIET = os.environ.get("QUIET", "") not in ("", "0")
 LOWRES = os.environ.get("LOWRES", "") not in ("", "0")
 QUIET = QUIET or LOWRES
 if LOWRES and "T4_INITRD" not in os.environ:
-    INITRD_SRC = os.path.join(ROOT, "boot", "initrd-touch4-lowres.bin")
+    INITRD_SRC = os.path.join(ROOT, "boot", "initrd-touch5-lowres.bin")
 MID_OFFS = set()                         # blob offsets of re-encoded VA bl words (audit skip)
 BASE = 0x44000000                         # zImage load PA
 PAGE_OFFSET = 0xC0000000

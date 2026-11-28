@@ -3,7 +3,7 @@
 > per-phone files (`mtcal-n92.bin`, `ioreg-devicetree-live.plist`), raw
 > captures, the IPSW device tree/kernelcache extracts, and the intermediate
 > initrd/driver variants. The final driver is inside
-> `boot/initrd-touch4-lowres.bin`; `touch4/` holds the scripts added to it.
+> `boot/initrd-touch5-lowres.bin`; `touch4/` holds the scripts added to it.
 
 # touch/ - iPhone 4 (n92ap) touchscreen bring-up
 

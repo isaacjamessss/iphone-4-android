@@ -8,7 +8,7 @@
 # home until the screen stays black), then run:  ./boot.sh [mode]
 # If openiboot is already running (USB 0525:1280) the DFU steps are skipped.
 #
-#   ./boot.sh          320x480 (2x scaled), touch working   (boot/lowres + initrd-touch4-lowres)
+#   ./boot.sh          320x480 (2x scaled), touch working   (boot/lowres + initrd-touch5-lowres)
 #   ./boot.sh quiet    640x960, stock T4 initrd, no touch  (boot/quiet)
 #   ./boot.sh colour   640x960 with colour checkpoints, for debugging early boot
 #
@@ -27,7 +27,7 @@ if ! lsusb | grep -q 0525:1280; then
 fi
 
 case "${1:-lowres}" in
-    lowres) K=boot/lowres; I=boot/initrd-touch4-lowres.bin ;;
+    lowres) K=boot/lowres; I=boot/initrd-touch5-lowres.bin ;;
     quiet)  K=boot/quiet;  I=boot/t4-initrd.bin ;;
     colour|color) K=boot;  I=boot/t4-initrd.bin ;;
     *) echo "usage: $0 [lowres|quiet|colour]"; exit 1 ;;

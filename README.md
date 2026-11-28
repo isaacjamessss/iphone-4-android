@@ -21,9 +21,9 @@ the n92ap with a small binary boot kit and openiboot.
 | 320x480 display, 2x scaled, page flipping | |
 | Quiet boot (no colour checkpoints, no debug bar) | |
 
-Known issues: touch reports only ~11 times per second (being fixed: the
-driver's 1 ms sleeps take ~20 ms on this 100 Hz kernel); no GPU, so the UI
-is software-rendered (that's why the default renders at 320x480).
+Touch reports at ~50 Hz (was ~11 Hz: the driver's 1 ms sleeps took ~20 ms on
+this 100 Hz kernel; they are now microsecond busy-waits). Known issues: no
+GPU, so the UI is software-rendered (that's why the default renders at 320x480).
 
 ## Requirements
 
@@ -81,8 +81,8 @@ boot/               everything that gets uploaded to the phone
   limera1n.payload    boot ROM exploit payload
   iBSS.n92ap-pwn.img3 patched iBSS (signature checks off)
   openiboot-archeyr.img3  openiboot for n92ap (archeYR fork)
-  lowres/             DEFAULT kit: 320x480 kernel + stub for initrd-touch4-lowres.bin
-  initrd-touch4-lowres.bin  T4 Android 2.3.7 rootfs + n92ap touch driver,
+  lowres/             DEFAULT kit: 320x480 kernel + stub for initrd-touch5-lowres.bin
+  initrd-touch5-lowres.bin  T4 Android 2.3.7 rootfs + n92ap touch driver,
                       /sys/power fix, density 160 (contains the author's touch cal)
   quiet/              640x960 kit without checkpoints (stock t4-initrd.bin)
   zImage kcaves.bin stub.bin  640x960 colour-checkpoint kit (stock t4-initrd.bin)
@@ -141,7 +141,7 @@ Notable bugs found on the way (details in `extras/docs/SESSION-2026-11-26.md`):
 
 ## Touchscreen
 
-The T4 touch driver (`/sbin/t4-touch-input` in `initrd-touch4-lowres.bin`)
+The T4 touch driver (`/sbin/t4-touch-input` in `initrd-touch5-lowres.bin`)
 is patched for the iPhone 4: the controller is powered from PMU LDO12
 (`pmutool set 0x16 0x02` in `t4-touch-start.sh`), chip id 0x4e31 is
 accepted, frame lengths are taken from the frame itself, and the per-unit
@@ -162,12 +162,12 @@ noisy on another unit. To use yours:
 3. Rebuild the initrd and a matching stub:
 
    ```sh
-   python3 extras/touch/cpio_patch.py boot/initrd-touch4-lowres.bin my-initrd.bin \
+   python3 extras/touch/cpio_patch.py boot/initrd-touch5-lowres.bin my-initrd.bin \
        sbin/t4-touch-input=t4-touch-input.mycal=0755
    QUIET=1 T4_INITRD=my-initrd.bin python3 extras/build/build-t4stub.py my-stub.bin
    ```
 
-   and boot those two instead of `boot/initrd-touch4-lowres.bin` /
+   and boot those two instead of `boot/initrd-touch5-lowres.bin` /
    `boot/lowres/stub.bin` (the stub carries the initrd size).
 
 ## Safety
